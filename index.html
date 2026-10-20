@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Dashboard - 037Cafe & 037Studio</title>
-    <!-- Tailwind CSS & Chart.js & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -51,28 +50,24 @@
             <h2 class="text-lg font-bold text-slate-800">037Cafe (ยอดขาย POS)</h2>
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <!-- Cafe Gross Sales -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <span class="text-xs text-slate-500 font-medium">Cafe ยอดขายรวมก่อน GP</span>
                 <div class="text-lg md:text-2xl font-bold text-slate-800 mt-2" id="cafe-total-sales">฿0.00</div>
                 <span class="text-[10px] text-slate-400 mt-1">จากระบบ Wongnai POS</span>
             </div>
 
-            <!-- Cafe Net Sales (-32.1%) -->
             <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl shadow-sm text-white col-span-2 sm:col-span-1">
                 <span class="text-xs text-emerald-100 font-medium">Cafe รายรับสุทธิ (หลังหัก GP)</span>
                 <div class="text-xl md:text-2xl font-bold mt-2" id="cafe-net-sales">฿0.00</div>
                 <span class="text-[10px] text-emerald-100 mt-1" id="cafe-gp-text">หัก GP Delivery 32.1%</span>
             </div>
 
-            <!-- Delivery Sales -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <span class="text-xs text-slate-500 font-medium">ยอดขาย Delivery (Grab/LINE MAN)</span>
                 <div class="text-lg md:text-2xl font-bold text-orange-600 mt-2" id="cafe-delivery-sales">฿0.00</div>
                 <span class="text-[10px] text-slate-400 mt-1" id="cafe-delivery-details">Grab: ฿0.00 | LINE MAN: ฿0.00</span>
             </div>
 
-            <!-- Total Bills & Guests -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <span class="text-xs text-slate-500 font-medium">บิลขาย / จำนวนลูกค้า</span>
                 <div class="text-lg md:text-2xl font-bold text-blue-600 mt-2" id="cafe-bills">0 บิล</div>
@@ -88,7 +83,6 @@
             <h2 class="text-lg font-bold text-slate-800">037Studio (ยอดขายสตูดิโอ)</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-            <!-- Studio Sales -->
             <div class="bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-sm text-white flex justify-between items-center">
                 <div>
                     <span class="text-xs text-purple-100 font-medium">Studio ยอดขายรวม</span>
@@ -100,7 +94,6 @@
                 </div>
             </div>
 
-            <!-- Studio Bookings Count -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-100 flex justify-between items-center">
                 <div>
                     <span class="text-xs text-slate-500 font-medium">จำนวนคิวจองสตูดิโอ</span>
@@ -116,7 +109,6 @@
 
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Cafe Sales Chart -->
         <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
             <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
                 <i data-lucide="coffee" class="w-4 h-4 text-orange-500"></i> แนวโน้มยอดขาย 037Cafe
@@ -126,7 +118,6 @@
             </div>
         </div>
 
-        <!-- Studio Sales Chart -->
         <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
             <h3 class="text-sm font-bold text-purple-700 mb-4 flex items-center gap-2">
                 <i data-lucide="camera" class="w-4 h-4 text-purple-500"></i> แนวโน้มยอดขาย 037Studio
@@ -169,14 +160,11 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <!-- Modal Header -->
             <div class="border-b border-slate-100 pb-4 mb-4">
                 <h3 class="text-xl font-bold text-slate-800" id="modalDate">รายงานประจำวันที่ -</h3>
             </div>
 
-            <!-- Modal Body Split -->
             <div class="space-y-6">
-                <!-- 1. STUDIO DETAILS -->
                 <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-100">
                     <h4 class="font-bold text-xs text-purple-800 uppercase tracking-wider mb-2 flex items-center gap-1">
                         <i data-lucide="camera" class="w-4 h-4"></i> รายละเอียด 037Studio (Google Calendar)
@@ -184,7 +172,6 @@
                     <div id="modalStudioList" class="space-y-2 text-xs"></div>
                 </div>
 
-                <!-- 2. CAFE DETAILS -->
                 <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
                     <h4 class="font-bold text-xs text-orange-800 uppercase tracking-wider mb-2 flex items-center gap-1">
                         <i data-lucide="coffee" class="w-4 h-4"></i> รายละเอียด 037Cafe (Wongnai POS)
@@ -199,7 +186,6 @@
                     </div>
                 </div>
 
-                <!-- Image Slip -->
                 <div id="modalImageContainer" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center hidden">
                     <span class="text-xs text-slate-500 font-medium block mb-2">รูปภาพสลิปรายงานปิดรอบ Cafe</span>
                     <img id="modalImage" src="" alt="สลิปรายงานปิดรอบ" class="max-h-80 mx-auto rounded-xl shadow-sm border border-slate-200 object-contain">
@@ -209,7 +195,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyOMNQGht5GdnLrjAAC_VJH-Zb3pWDaMv_h-tuM2TkbQE_-MLX5mudglrjknx1Oav-Y/exec";
+        // วาง Web App Executable URL ล่าสุดของคุณที่นี่
+        const API_URL = "https://script.google.com/macros/s/AKfycbybXmk1QZ7iShGGTXRWbMRYewmO6KbBSD8s9-Q-YkIfyaZr18hHZFgPiu3y2bMCyefb/exec";
         const GP_RATE = 0.321;
 
         let allSalesData = [];
@@ -226,9 +213,14 @@
 
         async function fetchData() {
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(API_URL, { redirect: "follow" });
                 const rawData = await response.json();
                 
+                if (!Array.isArray(rawData)) {
+                    console.error("Data received is not an array:", rawData);
+                    return;
+                }
+
                 allSalesData = rawData.map(item => {
                     const c = item.cafe || {};
                     const s = item.studio || {};
@@ -315,7 +307,6 @@
             const cafeGP = deliveryTotal * GP_RATE;
             const cafeNet = cafeTotal - cafeGP;
 
-            // Update Cafe Dashboard
             document.getElementById('cafe-total-sales').innerText = `฿${cafeTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById('cafe-net-sales').innerText = `฿${cafeNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById('cafe-gp-text').innerText = `หัก GP Delivery (-฿${cafeGP.toLocaleString('th-TH', {minimumFractionDigits: 2})})`;
@@ -324,7 +315,6 @@
             document.getElementById('cafe-bills').innerText = `${cafeBills.toLocaleString('th-TH')} บิล`;
             document.getElementById('cafe-guests').innerText = `รวม ${cafeGuests.toLocaleString('th-TH')} คน`;
 
-            // Update Studio Dashboard
             document.getElementById('studio-total-sales').innerText = `฿${studioTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById('studio-bookings-count').innerText = `${studioCount} คิวจอง`;
 
@@ -340,7 +330,6 @@
             }).reverse();
             const studioArr = data.map(d => d.studio.studioSales).reverse();
 
-            // Cafe Chart
             const ctx1 = document.getElementById('cafeChart').getContext('2d');
             if (cafeChartInstance) cafeChartInstance.destroy();
             cafeChartInstance = new Chart(ctx1, {
@@ -359,7 +348,6 @@
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
 
-            // Studio Chart
             const ctx2 = document.getElementById('studioChart').getContext('2d');
             if (studioChartInstance) studioChartInstance.destroy();
             studioChartInstance = new Chart(ctx2, {
@@ -380,6 +368,11 @@
         function renderTable(data) {
             const tbody = document.getElementById('dailyTableBody');
             tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">ยังไม่มีข้อมูลบันทึกในระบบ</td></tr>`;
+                return;
+            }
 
             data.forEach(item => {
                 const c = item.cafe;
@@ -413,7 +406,6 @@
 
             document.getElementById('modalDate').innerText = `รายงานประจำวันที่ ${item.date}`;
 
-            // Studio List
             const studioContainer = document.getElementById('modalStudioList');
             studioContainer.innerHTML = '';
             if (s.studioBookings && s.studioBookings.length > 0) {
@@ -432,7 +424,6 @@
                 studioContainer.innerHTML = `<div class="text-slate-400 text-center py-2">ไม่มีคิวจอง Studio ในวันนี้</div>`;
             }
 
-            // Cafe Calculations
             const delivTotal = c.grabSales + c.lineManSales;
             const gpDeduction = delivTotal * GP_RATE;
             const netRev = c.totalSales - gpDeduction;
@@ -444,7 +435,6 @@
             document.getElementById('modalGPDeduction').innerText = `-฿${gpDeduction.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById('modalNetRevenue').innerText = `฿${netRev.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
-            // Image Slip
             const imgContainer = document.getElementById('modalImageContainer');
             if (c.imageUrl) {
                 document.getElementById('modalImage').src = c.imageUrl;
