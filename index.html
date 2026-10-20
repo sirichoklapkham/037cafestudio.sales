@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard - 037Cafe & 037Studio</title>
+    <title>Sales Dashboard - Realtime 037Cafe & 037Studio</title>
+    <!-- Tailwind CSS & Chart.js & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +23,13 @@
             <div class="flex items-center gap-2">
                 <span class="p-2 bg-slate-900 text-white rounded-xl"><i data-lucide="layout-grid" class="w-6 h-6"></i></span>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">ระบบรายงานแยกยอดขายร้านค้า</h1>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl md:text-2xl font-bold text-slate-800">ระบบรายงานยอดขายร้านค้า</h1>
+                        <!-- Live Status Badge -->
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live 3s
+                        </span>
+                    </div>
                     <p class="text-xs md:text-sm text-slate-500">แยกสรุปยอด 037Cafe (POS) และ 037Studio (Google Calendar)</p>
                 </div>
             </div>
@@ -195,12 +202,14 @@
     </div>
 
     <script>
-        // วาง Web App Executable URL ล่าสุดของคุณที่นี่
-        const API_URL = "https://script.google.com/macros/s/AKfycbybXmk1QZ7iShGGTXRWbMRYewmO6KbBSD8s9-Q-YkIfyaZr18hHZFgPiu3y2bMCyefb/exec";
+        // Web App Executable URL ล่าสุด
+        const API_URL = "https://script.google.com/macros/s/AKfycbx8pk0lMts82tdOT4u6w3t1-o6RLKPDccUOoZbBh-bGYDHq7Q0vQkQt6GeXbdnGiXRK/exec";
         const GP_RATE = 0.321;
+        const REFRESH_INTERVAL = 3000; // ตรวจเช็คข้อมูลใหม่ทุกๆ 3 วินาที (3,000 ms)
 
         let allSalesData = [];
         let filteredData = [];
+        let currentRangeDays = 7;
         let cafeChartInstance = null;
         let studioChartInstance = null;
 
@@ -216,10 +225,7 @@
                 const response = await fetch(API_URL, { redirect: "follow" });
                 const rawData = await response.json();
                 
-                if (!Array.isArray(rawData)) {
-                    console.error("Data received is not an array:", rawData);
-                    return;
-                }
+                if (!Array.isArray(rawData)) return;
 
                 allSalesData = rawData.map(item => {
                     const c = item.cafe || {};
@@ -253,21 +259,24 @@
                 });
 
                 allSalesData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                changeRange(7);
+                changeRange(currentRangeDays, false);
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Realtime fetch error:", error);
             }
         }
 
-        function changeRange(days) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-800', 'text-white', 'shadow-sm');
-                btn.classList.add('text-slate-600', 'hover:bg-slate-200');
-            });
-            const activeBtn = document.getElementById(`btn-${days}`);
-            if (activeBtn) {
-                activeBtn.classList.add('bg-slate-800', 'text-white', 'shadow-sm');
-                activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-200');
+        function changeRange(days, isUserClick = true) {
+            currentRangeDays = days;
+            if (isUserClick) {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('bg-slate-800', 'text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-600', 'hover:bg-slate-200');
+                });
+                const activeBtn = document.getElementById(`btn-${days}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-slate-800', 'text-white', 'shadow-sm');
+                    activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-200');
+                }
             }
 
             filteredData = allSalesData.slice(0, days);
@@ -345,7 +354,7 @@
                         tension: 0.3
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { beginAtZero: true } } }
             });
 
             const ctx2 = document.getElementById('studioChart').getContext('2d');
@@ -361,7 +370,7 @@
                         borderRadius: 8
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { beginAtZero: true } } }
             });
         }
 
@@ -453,7 +462,8 @@
 
         window.onload = () => {
             lucide.createIcons();
-            fetchData();
+            fetchData(); // ดึงครั้งแรกทันทีที่เปิดหน้าเว็บ
+            setInterval(fetchData, REFRESH_INTERVAL); // ตั้งเวลาดึงซ้ำทุกๆ 3 วินาที
         };
     </script>
 </body>
