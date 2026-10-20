@@ -25,7 +25,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl md:text-2xl font-bold text-slate-800">ระบบรายงานยอดขายร้านค้า</h1>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span id="sync-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live 3s
                         </span>
                     </div>
@@ -201,7 +201,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwlHBVbkocXZnPjXH4GTOut9SBizMSm04BKKnt2023hVccRvdFKiUX0bnJsx_8SW5k4/exec";
+        // วาง Web App URL ล่าสุดของคุณที่นี่
+        const API_URL = "https://script.google.com/macros/s/AKfycby32X69iIfcb7UDBQRHGxokS-54Z0fR5OTB2Dbwxt73PXcgZZCYm8MyJPBgBP9uWa0v/exec";
         const GP_RATE = 0.321;
         const REFRESH_INTERVAL = 3000;
 
@@ -226,11 +227,17 @@
         }
 
         async function fetchData() {
+            const badge = document.getElementById('sync-badge');
             try {
                 const response = await fetch(API_URL, { redirect: "follow" });
                 const rawData = await response.json();
                 
                 if (!Array.isArray(rawData)) return;
+
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800";
+                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live 3s`;
+                }
 
                 allSalesData = rawData.map(item => {
                     const c = item.cafe || {};
@@ -241,8 +248,8 @@
                     const cafeTotal = parseNum(c.totalSales);
 
                     return {
-                        date: item.date || "-", // YYYY-MM-DD
-                        displayDate: item.displayDate || formatToThaiDate(item.date), // DD/MM/YYYY
+                        date: item.date || "-",
+                        displayDate: item.displayDate || formatToThaiDate(item.date),
                         cafe: {
                             subTotal: parseNum(c.subTotal) || cafeTotal,
                             discount: parseNum(c.discount),
@@ -268,6 +275,10 @@
                 changeRange(currentRangeDays, false);
             } catch (error) {
                 console.error("Realtime fetch error:", error);
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
+                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Offline / Reconnecting`;
+                }
             }
         }
 
