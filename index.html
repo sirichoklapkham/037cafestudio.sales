@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard - Realtime 037Cafe & 037Studio</title>
+    <title>Sales Dashboard - 037Cafe & 037Studio</title>
     <!-- Tailwind CSS & Chart.js & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,6 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl md:text-2xl font-bold text-slate-800">ระบบรายงานยอดขายร้านค้า</h1>
-                        <!-- Live Status Badge -->
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live 3s
                         </span>
@@ -202,10 +201,9 @@
     </div>
 
     <script>
-        // Web App Executable URL ล่าสุด
-        const API_URL = "https://script.google.com/macros/s/AKfycbx8pk0lMts82tdOT4u6w3t1-o6RLKPDccUOoZbBh-bGYDHq7Q0vQkQt6GeXbdnGiXRK/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwlHBVbkocXZnPjXH4GTOut9SBizMSm04BKKnt2023hVccRvdFKiUX0bnJsx_8SW5k4/exec";
         const GP_RATE = 0.321;
-        const REFRESH_INTERVAL = 3000; // ตรวจเช็คข้อมูลใหม่ทุกๆ 3 วินาที (3,000 ms)
+        const REFRESH_INTERVAL = 3000;
 
         let allSalesData = [];
         let filteredData = [];
@@ -218,6 +216,13 @@
             if (typeof val === 'number') return val;
             const parsed = parseFloat(String(val).replace(/,/g, ''));
             return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function formatToThaiDate(yyyyMMdd) {
+            if (!yyyyMMdd || yyyyMMdd === '-') return '-';
+            if (yyyyMMdd.includes('/')) return yyyyMMdd;
+            const parts = yyyyMMdd.split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMMdd;
         }
 
         async function fetchData() {
@@ -236,7 +241,8 @@
                     const cafeTotal = parseNum(c.totalSales);
 
                     return {
-                        date: item.date || "-",
+                        date: item.date || "-", // YYYY-MM-DD
+                        displayDate: item.displayDate || formatToThaiDate(item.date), // DD/MM/YYYY
                         cafe: {
                             subTotal: parseNum(c.subTotal) || cafeTotal,
                             discount: parseNum(c.discount),
@@ -289,7 +295,7 @@
             if (found) {
                 openModal(found);
             } else {
-                alert("ไม่พบข้อมูลรายงานของวันที่ " + selectedDate);
+                alert("ไม่พบข้อมูลรายงานของวันที่ " + formatToThaiDate(selectedDate));
             }
         }
 
@@ -332,7 +338,7 @@
         }
 
         function renderCharts(data) {
-            const labels = data.map(d => d.date).reverse();
+            const labels = data.map(d => d.displayDate).reverse();
             const cafeNetArr = data.map(d => {
                 const deliv = d.cafe.grabSales + d.cafe.lineManSales;
                 return d.cafe.totalSales - (deliv * GP_RATE);
@@ -394,7 +400,7 @@
                 tr.className = "hover:bg-slate-50 transition-colors cursor-pointer";
                 tr.onclick = () => openModal(item);
                 tr.innerHTML = `
-                    <td class="p-3 font-semibold text-slate-700">${item.date}</td>
+                    <td class="p-3 font-semibold text-slate-700">${item.displayDate}</td>
                     <td class="p-3 font-medium text-orange-600">฿${c.totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                     <td class="p-3 font-bold text-emerald-600">฿${cafeNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                     <td class="p-3 font-bold text-purple-600">฿${s.studioSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
@@ -413,7 +419,7 @@
             const c = item.cafe;
             const s = item.studio;
 
-            document.getElementById('modalDate').innerText = `รายงานประจำวันที่ ${item.date}`;
+            document.getElementById('modalDate').innerText = `รายงานประจำวันที่ ${item.displayDate}`;
 
             const studioContainer = document.getElementById('modalStudioList');
             studioContainer.innerHTML = '';
@@ -462,8 +468,8 @@
 
         window.onload = () => {
             lucide.createIcons();
-            fetchData(); // ดึงครั้งแรกทันทีที่เปิดหน้าเว็บ
-            setInterval(fetchData, REFRESH_INTERVAL); // ตั้งเวลาดึงซ้ำทุกๆ 3 วินาที
+            fetchData();
+            setInterval(fetchData, REFRESH_INTERVAL);
         };
     </script>
 </body>
