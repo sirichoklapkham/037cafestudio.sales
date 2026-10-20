@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Overview & Daily Report Dashboard</title>
+    <title>Sales Dashboard - 037Cafe & 037Studio</title>
     <!-- Tailwind CSS & Chart.js & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -21,15 +21,15 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-100">
         <div>
             <div class="flex items-center gap-2">
-                <span class="p-2 bg-orange-100 text-orange-600 rounded-xl"><i data-lucide="store" class="w-6 h-6"></i></span>
+                <span class="p-2 bg-slate-900 text-white rounded-xl"><i data-lucide="layout-grid" class="w-6 h-6"></i></span>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">037cafe&studio มหาสารคาม</h1>
-                    <p class="text-xs md:text-sm text-slate-500">รายงานยอดขายปิดรอบประจำวัน (Wongnai POS / FoodStory)</p>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">ระบบรายงานแยกยอดขายร้านค้า</h1>
+                    <p class="text-xs md:text-sm text-slate-500">แยกสรุปยอด 037Cafe (POS) และ 037Studio (Google Calendar)</p>
                 </div>
             </div>
         </div>
         
-        <!-- Range Filter Buttons -->
+        <!-- Filter Range & Date Picker -->
         <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
             <div class="inline-flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
                 <button onclick="changeRange(1)" id="btn-1" class="tab-btn py-2 px-3 text-xs font-semibold rounded-xl transition-all">1 วัน</button>
@@ -38,121 +38,131 @@
                 <button onclick="changeRange(30)" id="btn-30" class="tab-btn py-2 px-3 text-xs font-semibold rounded-xl transition-all">1 เดือน</button>
             </div>
             
-            <!-- Date Picker for Specific Day -->
             <div class="relative">
                 <input type="date" id="datePicker" onchange="selectSpecificDate(this.value)" class="bg-slate-100 border border-slate-200 text-slate-700 text-xs rounded-2xl p-2.5 font-medium outline-none focus:ring-2 focus:ring-orange-500">
             </div>
         </div>
     </div>
 
-    <!-- Summary Metrics Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-6">
-        <!-- Total Sales -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-500"></i> ยอดขายรวมก่อน GP
-            </span>
-            <div class="text-lg md:text-2xl font-bold text-slate-800 mt-2" id="total-sales">฿0.00</div>
-            <span class="text-[10px] text-slate-400 mt-1">จากรายการ POS</span>
+    <!-- SEPARATE SECTION 1: 037CAFE DASHBOARD -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="p-1.5 bg-orange-100 text-orange-600 rounded-lg"><i data-lucide="coffee" class="w-5 h-5"></i></span>
+            <h2 class="text-lg font-bold text-slate-800">037Cafe (ยอดขาย POS)</h2>
         </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <!-- Cafe Gross Sales -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <span class="text-xs text-slate-500 font-medium">Cafe ยอดขายรวมก่อน GP</span>
+                <div class="text-lg md:text-2xl font-bold text-slate-800 mt-2" id="cafe-total-sales">฿0.00</div>
+                <span class="text-[10px] text-slate-400 mt-1">จากระบบ Wongnai POS</span>
+            </div>
 
-        <!-- Net Revenue after Delivery GP (-32.1%) -->
-        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl shadow-sm text-white flex flex-col justify-between col-span-2 sm:col-span-1">
-            <span class="text-xs text-emerald-100 font-medium flex items-center gap-1">
-                <i data-lucide="wallet" class="w-4 h-4 text-emerald-200"></i> รายรับสุทธิ (หลังหัก GP)
-            </span>
-            <div class="text-xl md:text-2xl font-bold mt-2" id="net-sales">฿0.00</div>
-            <span class="text-[10px] text-emerald-100 mt-1" id="gp-deducted-text">หัก GP Delivery 32.1% (฿0.00)</span>
-        </div>
+            <!-- Cafe Net Sales (-32.1%) -->
+            <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-2xl shadow-sm text-white col-span-2 sm:col-span-1">
+                <span class="text-xs text-emerald-100 font-medium">Cafe รายรับสุทธิ (หลังหัก GP)</span>
+                <div class="text-xl md:text-2xl font-bold mt-2" id="cafe-net-sales">฿0.00</div>
+                <span class="text-[10px] text-emerald-100 mt-1" id="cafe-gp-text">หัก GP Delivery 32.1%</span>
+            </div>
 
-        <!-- Delivery Sales Breakdown -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="bike" class="w-4 h-4 text-orange-500"></i> ยอดขายดิลิเวอรีรวม
-            </span>
-            <div class="text-lg md:text-2xl font-bold text-orange-600 mt-2" id="delivery-sales">฿0.00</div>
-            <span class="text-[10px] text-slate-400 mt-1" id="delivery-details">Grab: ฿0.00 | LINE MAN: ฿0.00</span>
-        </div>
+            <!-- Delivery Sales -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <span class="text-xs text-slate-500 font-medium">ยอดขาย Delivery (Grab/LINE MAN)</span>
+                <div class="text-lg md:text-2xl font-bold text-orange-600 mt-2" id="cafe-delivery-sales">฿0.00</div>
+                <span class="text-[10px] text-slate-400 mt-1" id="cafe-delivery-details">Grab: ฿0.00 | LINE MAN: ฿0.00</span>
+            </div>
 
-        <!-- Total Bills & Guests -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="receipt" class="w-4 h-4 text-blue-500"></i> จำนวนบิล / ลูกค้า
-            </span>
-            <div class="text-lg md:text-2xl font-bold text-blue-600 mt-2" id="total-bills">0 บิล</div>
-            <span class="text-[10px] text-slate-400 mt-1" id="total-guests">รวม 0 คน</span>
-        </div>
-
-        <!-- Avg per Bill -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="trending-up" class="w-4 h-4 text-purple-500"></i> ยอดเฉลี่ยต่อบิล
-            </span>
-            <div class="text-lg md:text-2xl font-bold text-purple-600 mt-2" id="avg-trans">฿0.00</div>
-            <span class="text-[10px] text-slate-400 mt-1" id="avg-daily">เฉลี่ยวันละ ฿0.00</span>
+            <!-- Total Bills & Guests -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <span class="text-xs text-slate-500 font-medium">บิลขาย / จำนวนลูกค้า</span>
+                <div class="text-lg md:text-2xl font-bold text-blue-600 mt-2" id="cafe-bills">0 บิล</div>
+                <span class="text-[10px] text-slate-400 mt-1" id="cafe-guests">รวม 0 คน</span>
+            </div>
         </div>
     </div>
 
-    <!-- Main Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Sales Trend Line Chart -->
-        <div class="lg:col-span-2 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i data-lucide="line-chart" class="w-4 h-4 text-orange-500"></i> แนวโน้มยอดขาย
-                </h2>
-                <span class="text-xs text-slate-400">เปรียบเทียบยอดรวมและรายรับสุทธิ</span>
+    <!-- SEPARATE SECTION 2: 037STUDIO DASHBOARD -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="p-1.5 bg-purple-100 text-purple-600 rounded-lg"><i data-lucide="camera" class="w-5 h-5"></i></span>
+            <h2 class="text-lg font-bold text-slate-800">037Studio (ยอดขายสตูดิโอ)</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <!-- Studio Sales -->
+            <div class="bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-sm text-white flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-purple-100 font-medium">Studio ยอดขายรวม</span>
+                    <div class="text-xl md:text-3xl font-bold mt-1" id="studio-total-sales">฿0.00</div>
+                    <span class="text-[10px] text-purple-200 mt-1">จาก Google Calendar</span>
+                </div>
+                <div class="p-3 bg-white/10 rounded-2xl backdrop-blur-sm">
+                    <i data-lucide="dollar-sign" class="w-8 h-8 text-purple-200"></i>
+                </div>
             </div>
-            <div class="relative h-64 md:h-80">
-                <canvas id="salesChart"></canvas>
+
+            <!-- Studio Bookings Count -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-100 flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-slate-500 font-medium">จำนวนคิวจองสตูดิโอ</span>
+                    <div class="text-xl md:text-3xl font-bold text-purple-600 mt-1" id="studio-bookings-count">0 คิว</div>
+                    <span class="text-[10px] text-slate-400 mt-1">รายการจองใช้บริการ</span>
+                </div>
+                <div class="p-3 bg-purple-50 rounded-2xl">
+                    <i data-lucide="calendar" class="w-8 h-8 text-purple-500"></i>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Payment Breakdown Doughnut Chart -->
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Cafe Sales Chart -->
         <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i data-lucide="pie-chart" class="w-4 h-4 text-orange-500"></i> ช่องทางการชำระเงิน
-                </h2>
+            <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                <i data-lucide="coffee" class="w-4 h-4 text-orange-500"></i> แนวโน้มยอดขาย 037Cafe
+            </h3>
+            <div class="relative h-64">
+                <canvas id="cafeChart"></canvas>
             </div>
-            <div class="relative h-64 md:h-80 flex items-center justify-center">
-                <canvas id="paymentChart"></canvas>
+        </div>
+
+        <!-- Studio Sales Chart -->
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+            <h3 class="text-sm font-bold text-purple-700 mb-4 flex items-center gap-2">
+                <i data-lucide="camera" class="w-4 h-4 text-purple-500"></i> แนวโน้มยอดขาย 037Studio
+            </h3>
+            <div class="relative h-64">
+                <canvas id="studioChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Daily Log Table & Inspection -->
+    <!-- Separate History Logs Table -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <div>
-                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="calendar" class="w-5 h-5 text-orange-500"></i> ประวัติรายงานปิดรอบรายวัน
-                </h2>
-                <p class="text-xs text-slate-500">คลิกที่รายการเพื่อดูรายละเอียดปิดรอบฉบับเต็มและรูปสลิป</p>
-            </div>
-        </div>
+        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="list" class="w-5 h-5 text-slate-700"></i> รายงานย้อนหลังแยกรายวัน
+        </h2>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs md:text-sm">
                 <thead>
                     <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
                         <th class="p-3 rounded-l-xl">วันที่</th>
-                        <th class="p-3">ยอดขายรวม</th>
-                        <th class="p-3">ยอดขาย Delivery</th>
-                        <th class="p-3">หัก GP Delivery (32.1%)</th>
-                        <th class="p-3">รายรับสุทธิ</th>
-                        <th class="p-3">บิล/ลูกค้า</th>
+                        <th class="p-3 text-orange-600">037Cafe ยอดรวม</th>
+                        <th class="p-3 text-emerald-600">037Cafe รายรับสุทธิ</th>
+                        <th class="p-3 text-purple-600">037Studio ยอดรวม</th>
+                        <th class="p-3">คิว Studio</th>
                         <th class="p-3 text-center rounded-r-xl">รายละเอียด</th>
                     </tr>
                 </thead>
                 <tbody id="dailyTableBody" class="divide-y divide-slate-100">
-                    <!-- Dynamic Table Rows -->
+                    <!-- Rows -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Detail Modal for Specific Day Inspection -->
+    <!-- Detail Modal -->
     <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 shadow-2xl relative">
             <button onclick="closeModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
@@ -161,87 +171,52 @@
 
             <!-- Modal Header -->
             <div class="border-b border-slate-100 pb-4 mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 bg-orange-100 text-orange-600 font-bold text-xs rounded-full" id="modalDrawerId">Drawer ID: L8F</span>
-                    <span class="text-xs text-slate-400" id="modalStoreName">037cafe&studio มหาสารคาม</span>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mt-1" id="modalDate">รายงานปิดรอบประจำวันที่ -</h3>
-                <p class="text-xs text-slate-500 mt-0.5" id="modalTimes">เวลาเปิด-ปิด: - ถึง -</p>
+                <h3 class="text-xl font-bold text-slate-800" id="modalDate">รายงานประจำวันที่ -</h3>
             </div>
 
-            <!-- Modal Content Grid -->
-            <div class="space-y-5">
-                <!-- Image Slip Preview Section -->
+            <!-- Modal Body Split -->
+            <div class="space-y-6">
+                <!-- 1. STUDIO DETAILS -->
+                <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-100">
+                    <h4 class="font-bold text-xs text-purple-800 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="camera" class="w-4 h-4"></i> รายละเอียด 037Studio (Google Calendar)
+                    </h4>
+                    <div id="modalStudioList" class="space-y-2 text-xs"></div>
+                </div>
+
+                <!-- 2. CAFE DETAILS -->
+                <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
+                    <h4 class="font-bold text-xs text-orange-800 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i data-lucide="coffee" class="w-4 h-4"></i> รายละเอียด 037Cafe (Wongnai POS)
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between"><span>Sub Total (ก่อนส่วนลด)</span><span id="modalSubTotal" class="font-semibold">฿0.00</span></div>
+                        <div class="flex justify-between"><span>Discount (ส่วนลด)</span><span id="modalDiscount" class="text-red-500">-฿0.00</span></div>
+                        <div class="flex justify-between font-bold text-slate-800 pt-1 border-t border-orange-200"><span>Cafe Total Sales</span><span id="modalTotalSales">฿0.00</span></div>
+                        <div class="flex justify-between text-orange-700"><span>Delivery Sales (Grab/LINE MAN)</span><span id="modalDeliverySales">฿0.00</span></div>
+                        <div class="flex justify-between text-red-500"><span>หัก GP Delivery (-32.1%)</span><span id="modalGPDeduction">-฿0.00</span></div>
+                        <div class="flex justify-between font-bold text-emerald-600 pt-1 border-t border-orange-200"><span>Cafe Net Revenue (สุทธิ)</span><span id="modalNetRevenue">฿0.00</span></div>
+                    </div>
+                </div>
+
+                <!-- Image Slip -->
                 <div id="modalImageContainer" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center hidden">
-                    <span class="text-xs text-slate-500 font-medium block mb-2">รูปภาพสลิปรายงานปิดรอบ</span>
+                    <span class="text-xs text-slate-500 font-medium block mb-2">รูปภาพสลิปรายงานปิดรอบ Cafe</span>
                     <img id="modalImage" src="" alt="สลิปรายงานปิดรอบ" class="max-h-80 mx-auto rounded-xl shadow-sm border border-slate-200 object-contain">
-                </div>
-
-                <!-- Financial Summary Box -->
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
-                    <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2">สรุปยอดเงินขาย (Financial Summary)</h4>
-                    <div class="flex justify-between text-xs text-slate-600"><span>Sub Total (ยอดรวมก่อนส่วนลด)</span><span id="modalSubTotal" class="font-semibold">฿0.00</span></div>
-                    <div class="flex justify-between text-xs text-slate-600"><span>Discount (ส่วนลด)</span><span id="modalDiscount" class="font-semibold text-red-500">-฿0.00</span></div>
-                    <div class="flex justify-between text-sm font-bold text-slate-800 pt-2 border-t border-slate-200"><span>Total Sales (ยอดขายรวม)</span><span id="modalTotalSales" class="text-emerald-600">฿0.00</span></div>
-                    
-                    <!-- Delivery GP Deduction Info -->
-                    <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mt-2 space-y-1 text-xs">
-                        <div class="flex justify-between text-orange-800 font-medium">
-                            <span>ยอดขาย Delivery (Grab + LINE MAN)</span>
-                            <span id="modalDeliverySales">฿0.00</span>
-                        </div>
-                        <div class="flex justify-between text-orange-600">
-                            <span>หัก ค่าธรรมเนียม GP Delivery (-32.1%)</span>
-                            <span id="modalGPDeduction">-฿0.00</span>
-                        </div>
-                        <div class="flex justify-between text-xs font-bold text-orange-900 pt-1 border-t border-orange-200/60">
-                            <span>รายรับสุทธิ (Net Revenue)</span>
-                            <span id="modalNetRevenue">฿0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sales By Category -->
-                <div>
-                    <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2">ยอดขายตามหมวดหมู่ (Sales by Category)</h4>
-                    <div class="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-100 text-xs" id="modalCategoriesList">
-                        <!-- Category items rendered here -->
-                    </div>
-                </div>
-
-                <!-- Payment Channels & Drawer Audit Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Payment Methods -->
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2">ช่องทางชำระเงิน (Payments)</h4>
-                        <div class="space-y-1.5 text-xs text-slate-600" id="modalPaymentsList">
-                            <!-- Payment breakdown rendered here -->
-                        </div>
-                    </div>
-
-                    <!-- Drawer Cash Audit -->
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-2">ลิ้นชักเงินสด (Drawer Audit)</h4>
-                        <div class="space-y-1.5 text-xs text-slate-600" id="modalDrawerAudit">
-                            <!-- Drawer audit rendered here -->
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // *** Web App API URL ล่าสุด ***
         const API_URL = "https://script.google.com/macros/s/AKfycbwQ1CtKLKZXtEhr_Sk4ddfDJqtrTCjDBtrXMSGpkN9wb332XyQ9oQvqqgyfD7pLkL2D/exec";
-        const GP_RATE = 0.321; // GP Delivery Rate 32.1%
+        const GP_RATE = 0.321;
 
         let allSalesData = [];
         let filteredData = [];
-        let salesChartInstance = null;
-        let paymentChartInstance = null;
+        let cafeChartInstance = null;
+        let studioChartInstance = null;
 
-        // ดึงข้อมูลและแปลงชนิดตัวเลข
         function parseNum(val) {
             if (val === undefined || val === null || val === '') return 0;
             if (typeof val === 'number') return val;
@@ -254,58 +229,52 @@
                 const response = await fetch(API_URL);
                 const rawData = await response.json();
                 
-                // Normalizing Data Structure
                 allSalesData = rawData.map(item => {
-                    const grab = parseNum(item.grabSales || item.grabAccount || item.grab);
-                    const lineMan = parseNum(item.lineManSales || item.lineMan);
-                    const totalSales = parseNum(item.totalSales);
-                    
+                    const c = item.cafe || {};
+                    const s = item.studio || {};
+
+                    const grab = parseNum(c.grabSales || c.grabAccount || c.grab);
+                    const lineMan = parseNum(c.lineManSales || c.lineMan);
+                    const cafeTotal = parseNum(c.totalSales);
+
                     return {
-                        date: item.date || item.formattedDate || "-",
-                        drawerId: item.drawerId || "L8F",
-                        storeName: item.storeName || "037cafe&studio มหาสารคาม",
-                        startTime: item.startTime || "-",
-                        endTime: item.endTime || "-",
-                        subTotal: parseNum(item.subTotal) || totalSales,
-                        discount: parseNum(item.discount),
-                        totalSales: totalSales,
-                        guests: parseNum(item.guests || item.totalGuests),
-                        avgTrans: parseNum(item.avgTrans),
-                        cash: parseNum(item.cash || item.cashSales),
-                        linePay: parseNum(item.linePay),
-                        transfer: parseNum(item.transfer || item.transferSales),
-                        grabSales: grab,
-                        lineManSales: lineMan,
-                        thaiHelpThai: parseNum(item.thaiHelpThai),
-                        deliverySales: parseNum(item.deliverySales) || (grab + lineMan),
-                        startDrawer: parseNum(item.startDrawer),
-                        expectedDrawer: parseNum(item.expectedDrawer),
-                        actualDrawer: parseNum(item.actualDrawer),
-                        difference: parseNum(item.difference),
-                        totalBills: parseNum(item.totalBills),
-                        categories: Array.isArray(item.categories) ? item.categories : [],
-                        imageUrl: item.imageUrl || ""
+                        date: item.date || "-",
+                        cafe: {
+                            subTotal: parseNum(c.subTotal) || cafeTotal,
+                            discount: parseNum(c.discount),
+                            totalSales: cafeTotal,
+                            guests: parseNum(c.guests),
+                            cash: parseNum(c.cash),
+                            linePay: parseNum(c.linePay),
+                            transfer: parseNum(c.transfer),
+                            grabSales: grab,
+                            lineManSales: lineMan,
+                            totalBills: parseNum(c.totalBills),
+                            imageUrl: c.imageUrl || ""
+                        },
+                        studio: {
+                            studioSales: parseNum(s.studioSales),
+                            studioBookingsCount: parseNum(s.studioBookingsCount),
+                            studioBookings: Array.isArray(s.studioBookings) ? s.studioBookings : []
+                        }
                     };
                 });
 
-                // เรียงลำดับวันที่จากใหม่ไปเก่า
                 allSalesData.sort((a, b) => new Date(b.date) - new Date(a.date));
                 changeRange(7);
             } catch (error) {
                 console.error("Error fetching data:", error);
-                allSalesData = generateMockData();
-                changeRange(7);
             }
         }
 
         function changeRange(days) {
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
+                btn.classList.remove('bg-slate-800', 'text-white', 'shadow-sm');
                 btn.classList.add('text-slate-600', 'hover:bg-slate-200');
             });
             const activeBtn = document.getElementById(`btn-${days}`);
             if (activeBtn) {
-                activeBtn.classList.add('bg-orange-500', 'text-white', 'shadow-sm');
+                activeBtn.classList.add('bg-slate-800', 'text-white', 'shadow-sm');
                 activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-200');
             }
 
@@ -319,112 +288,92 @@
             if (found) {
                 openModal(found);
             } else {
-                alert("ไม่พบข้อมูลรายงานปิดรอบของวันที่ " + selectedDate);
+                alert("ไม่พบข้อมูลรายงานของวันที่ " + selectedDate);
             }
         }
 
         function updateDashboard() {
-            let totalSales = 0, totalBills = 0, totalGuests = 0;
+            let cafeTotal = 0, cafeBills = 0, cafeGuests = 0;
             let grabSales = 0, lineManSales = 0;
-            let cashSales = 0, transferSales = 0, otherSales = 0;
+            let studioTotal = 0, studioCount = 0;
 
             filteredData.forEach(item => {
-                totalSales += item.totalSales;
-                totalBills += item.totalBills;
-                totalGuests += item.guests;
-                
-                grabSales += item.grabSales;
-                lineManSales += item.lineManSales;
-                
-                cashSales += item.cash;
-                transferSales += item.transfer;
-                otherSales += (item.linePay + item.thaiHelpThai);
+                const c = item.cafe;
+                const s = item.studio;
+
+                cafeTotal += c.totalSales;
+                cafeBills += c.totalBills;
+                cafeGuests += c.guests;
+                grabSales += c.grabSales;
+                lineManSales += c.lineManSales;
+
+                studioTotal += s.studioSales;
+                studioCount += s.studioBookingsCount;
             });
 
-            const deliverySales = grabSales + lineManSales;
-            const gpAmount = deliverySales * GP_RATE;
-            const netSales = totalSales - gpAmount;
-            const avgTrans = totalBills > 0 ? totalSales / totalBills : 0;
-            const avgDaily = filteredData.length > 0 ? totalSales / filteredData.length : 0;
+            const deliveryTotal = grabSales + lineManSales;
+            const cafeGP = deliveryTotal * GP_RATE;
+            const cafeNet = cafeTotal - cafeGP;
 
-            // Update Metrics Cards
-            document.getElementById('total-sales').innerText = `฿${totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('net-sales').innerText = `฿${netSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('gp-deducted-text').innerText = `หัก GP Delivery 32.1% (฿${gpAmount.toLocaleString('th-TH', {minimumFractionDigits: 2})})`;
-            
-            document.getElementById('delivery-sales').innerText = `฿${deliverySales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('delivery-details').innerText = `Grab: ฿${grabSales.toLocaleString('th-TH', {minimumFractionDigits: 2})} | LINE MAN: ฿${lineManSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            
-            document.getElementById('total-bills').innerText = `${totalBills.toLocaleString('th-TH')} บิล`;
-            document.getElementById('total-guests').innerText = `รวม ${totalGuests.toLocaleString('th-TH')} คน`;
-            
-            document.getElementById('avg-trans').innerText = `฿${avgTrans.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('avg-daily').innerText = `เฉลี่ยวันละ ฿${avgDaily.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            // Update Cafe Dashboard
+            document.getElementById('cafe-total-sales').innerText = `฿${cafeTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('cafe-net-sales').innerText = `฿${cafeNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('cafe-gp-text').innerText = `หัก GP Delivery (-฿${cafeGP.toLocaleString('th-TH', {minimumFractionDigits: 2})})`;
+            document.getElementById('cafe-delivery-sales').innerText = `฿${deliveryTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('cafe-delivery-details').innerText = `Grab: ฿${grabSales.toLocaleString('th-TH')} | LINE MAN: ฿${lineManSales.toLocaleString('th-TH')}`;
+            document.getElementById('cafe-bills').innerText = `${cafeBills.toLocaleString('th-TH')} บิล`;
+            document.getElementById('cafe-guests').innerText = `รวม ${cafeGuests.toLocaleString('th-TH')} คน`;
 
-            renderCharts(filteredData, { cashSales, transferSales, deliverySales, otherSales });
+            // Update Studio Dashboard
+            document.getElementById('studio-total-sales').innerText = `฿${studioTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('studio-bookings-count').innerText = `${studioCount} คิวจอง`;
+
+            renderCharts(filteredData);
             renderTable(filteredData);
         }
 
-        function renderCharts(data, payments) {
+        function renderCharts(data) {
             const labels = data.map(d => d.date).reverse();
-            const totalSalesArr = data.map(d => d.totalSales).reverse();
-            const netSalesArr = data.map(d => {
-                const deliv = d.grabSales + d.lineManSales;
-                return d.totalSales - (deliv * GP_RATE);
+            const cafeNetArr = data.map(d => {
+                const deliv = d.cafe.grabSales + d.cafe.lineManSales;
+                return d.cafe.totalSales - (deliv * GP_RATE);
             }).reverse();
+            const studioArr = data.map(d => d.studio.studioSales).reverse();
 
-            // Line Chart
-            const ctx1 = document.getElementById('salesChart').getContext('2d');
-            if (salesChartInstance) salesChartInstance.destroy();
-            salesChartInstance = new Chart(ctx1, {
+            // Cafe Chart
+            const ctx1 = document.getElementById('cafeChart').getContext('2d');
+            if (cafeChartInstance) cafeChartInstance.destroy();
+            cafeChartInstance = new Chart(ctx1, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'ยอดขายรวม (ก่อน GP)',
-                            data: totalSalesArr,
-                            borderColor: '#94a3b8',
-                            borderDash: [5, 5],
-                            fill: false,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'รายรับสุทธิ (หลังหัก GP)',
-                            data: netSalesArr,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: true,
-                            borderWidth: 3,
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-
-            // Doughnut Chart
-            const ctx2 = document.getElementById('paymentChart').getContext('2d');
-            if (paymentChartInstance) paymentChartInstance.destroy();
-            paymentChartInstance = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['โอนเงิน', 'เดลิเวอรี่', 'เงินสด', 'อื่นๆ'],
                     datasets: [{
-                        data: [payments.transferSales, payments.deliverySales, payments.cashSales, payments.otherSales],
-                        backgroundColor: ['#8b5cf6', '#f97316', '#3b82f6', '#cbd5e1']
+                        label: '037Cafe รายรับสุทธิ (฿)',
+                        data: cafeNetArr,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        fill: true,
+                        tension: 0.3
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+
+            // Studio Chart
+            const ctx2 = document.getElementById('studioChart').getContext('2d');
+            if (studioChartInstance) studioChartInstance.destroy();
+            studioChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '037Studio ยอดขาย (฿)',
+                        data: studioArr,
+                        backgroundColor: '#a855f7',
+                        borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
         }
 
@@ -433,22 +382,23 @@
             tbody.innerHTML = '';
 
             data.forEach(item => {
-                const deliveryTotal = item.grabSales + item.lineManSales;
-                const gpDeducted = deliveryTotal * GP_RATE;
-                const netRevenue = item.totalSales - gpDeducted;
+                const c = item.cafe;
+                const s = item.studio;
+
+                const deliv = c.grabSales + c.lineManSales;
+                const cafeNet = c.totalSales - (deliv * GP_RATE);
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors cursor-pointer";
                 tr.onclick = () => openModal(item);
                 tr.innerHTML = `
                     <td class="p-3 font-semibold text-slate-700">${item.date}</td>
-                    <td class="p-3 font-medium">฿${item.totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                    <td class="p-3 text-orange-600 font-medium">฿${deliveryTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                    <td class="p-3 text-red-500">-฿${gpDeducted.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                    <td class="p-3 font-bold text-emerald-600">฿${netRevenue.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                    <td class="p-3 text-slate-500">${item.totalBills} บิล (${item.guests} คน)</td>
+                    <td class="p-3 font-medium text-orange-600">฿${c.totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="p-3 font-bold text-emerald-600">฿${cafeNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="p-3 font-bold text-purple-600">฿${s.studioSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="p-3 text-purple-700">${s.studioBookingsCount} คิว</td>
                     <td class="p-3 text-center">
-                        <button class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-600 hover:text-orange-600 rounded-lg text-xs font-semibold transition-all">
+                        <button class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all">
                             ดูรายละเอียด
                         </button>
                     </td>
@@ -457,114 +407,58 @@
             });
         }
 
-        function openModal(data) {
-            document.getElementById('modalDrawerId').innerText = `Drawer ID: ${data.drawerId || 'L8F'}`;
-            document.getElementById('modalStoreName').innerText = data.storeName || '037cafe&studio มหาสารคาม';
-            document.getElementById('modalDate').innerText = `รายงานปิดรอบประจำวันที่ ${data.date}`;
-            document.getElementById('modalTimes').innerText = `เวลาเปิด-ปิด: ${data.startTime || '-'} ถึง ${data.endTime || '-'}`;
+        function openModal(item) {
+            const c = item.cafe;
+            const s = item.studio;
 
-            // Image Slip Preview
+            document.getElementById('modalDate').innerText = `รายงานประจำวันที่ ${item.date}`;
+
+            // Studio List
+            const studioContainer = document.getElementById('modalStudioList');
+            studioContainer.innerHTML = '';
+            if (s.studioBookings && s.studioBookings.length > 0) {
+                s.studioBookings.forEach(b => {
+                    studioContainer.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-purple-100">
+                            <div>
+                                <span class="font-semibold text-slate-800 block">${b.title}</span>
+                                <span class="text-[10px] text-slate-400"><i data-lucide="clock" class="inline w-3 h-3"></i> ${b.time}</span>
+                            </div>
+                            <span class="font-bold text-purple-600">฿${parseNum(b.price).toLocaleString('th-TH', {minimumFractionDigits: 2})}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                studioContainer.innerHTML = `<div class="text-slate-400 text-center py-2">ไม่มีคิวจอง Studio ในวันนี้</div>`;
+            }
+
+            // Cafe Calculations
+            const delivTotal = c.grabSales + c.lineManSales;
+            const gpDeduction = delivTotal * GP_RATE;
+            const netRev = c.totalSales - gpDeduction;
+
+            document.getElementById('modalSubTotal').innerText = `฿${(c.subTotal || c.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalDiscount').innerText = `-฿${c.discount.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalTotalSales').innerText = `฿${c.totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalDeliverySales').innerText = `฿${delivTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalGPDeduction').innerText = `-฿${gpDeduction.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalNetRevenue').innerText = `฿${netRev.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            // Image Slip
             const imgContainer = document.getElementById('modalImageContainer');
-            if (data.imageUrl) {
-                document.getElementById('modalImage').src = data.imageUrl;
+            if (c.imageUrl) {
+                document.getElementById('modalImage').src = c.imageUrl;
                 imgContainer.classList.remove('hidden');
             } else {
                 imgContainer.classList.add('hidden');
             }
 
-            // Financial Calculations
-            const delivTotal = data.grabSales + data.lineManSales;
-            const gpDeduction = delivTotal * GP_RATE;
-            const netRev = data.totalSales - gpDeduction;
-
-            document.getElementById('modalSubTotal').innerText = `฿${(data.subTotal || data.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('modalDiscount').innerText = `-฿${data.discount.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('modalTotalSales').innerText = `฿${data.totalSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            
-            document.getElementById('modalDeliverySales').innerText = `฿${delivTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('modalGPDeduction').innerText = `-฿${gpDeduction.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('modalNetRevenue').innerText = `฿${netRev.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-
-            // Categories List
-            const catContainer = document.getElementById('modalCategoriesList');
-            catContainer.innerHTML = '';
-            if (data.categories && data.categories.length > 0) {
-                data.categories.forEach(cat => {
-                    catContainer.innerHTML += `
-                        <div class="p-2.5 flex justify-between items-center">
-                            <span class="text-slate-700 font-medium">${cat.name}</span>
-                            <div class="space-x-3">
-                                <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-500">${cat.qty} ชิ้น</span>
-                                <span class="font-semibold text-slate-800">฿${parseNum(cat.amount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                catContainer.innerHTML = `<div class="p-3 text-slate-400 text-center">ไม่มีข้อมูลหมวดหมู่</div>`;
-            }
-
-            // Payments Breakdown
-            document.getElementById('modalPaymentsList').innerHTML = `
-                <div class="flex justify-between"><span>By Cash (เงินสด)</span><span class="font-medium text-slate-800">฿${data.cash.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>By LINE Pay</span><span class="font-medium text-slate-800">฿${data.linePay.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>- โอนเงิน</span><span class="font-medium text-purple-600">฿${data.transfer.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>- บัญชี Grab</span><span class="font-medium text-emerald-600">฿${data.grabSales.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>- LINE MAN Delivery</span><span class="font-medium text-green-600">฿${data.lineManSales.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>- ไทยช่วยไทย พลัส</span><span class="font-medium text-slate-800">฿${data.thaiHelpThai.toFixed(2)}</span></div>
-            `;
-
-            // Drawer Audit
-            document.getElementById('modalDrawerAudit').innerHTML = `
-                <div class="flex justify-between"><span>Start Drawer (เงินเริ่มต้น)</span><span>฿${data.startDrawer.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>Cash Sales (เงินสดขายได้)</span><span>฿${data.cash.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>Expected in Drawer</span><span class="font-medium">฿${data.expectedDrawer.toFixed(2)}</span></div>
-                <div class="flex justify-between"><span>Actual in Drawer</span><span class="font-medium text-emerald-600">฿${data.actualDrawer.toFixed(2)}</span></div>
-                <div class="flex justify-between pt-1 border-t border-slate-200 font-bold"><span>Difference (ส่วนต่าง)</span><span class="${data.difference === 0 ? 'text-slate-700' : 'text-red-500'}">฿${data.difference.toFixed(2)}</span></div>
-            `;
-
             document.getElementById('detailModal').classList.remove('hidden');
+            lucide.createIcons();
         }
 
         function closeModal() {
             document.getElementById('detailModal').classList.add('hidden');
-        }
-
-        // Mock Data สำรองกรณีไม่เชื่อมต่อ API
-        function generateMockData() {
-            return [
-                {
-                    date: "2026-10-20",
-                    drawerId: "L8F",
-                    storeName: "037cafe&studio มหาสารคาม",
-                    startTime: "20/10/2026 - 10:14",
-                    endTime: "20/10/2026 - 19:52",
-                    subTotal: 1225.00,
-                    discount: 0.00,
-                    totalSales: 1225.00,
-                    guests: 12,
-                    avgTrans: 102.08,
-                    cash: 70.00,
-                    linePay: 170.00,
-                    transfer: 710.00,
-                    grabSales: 230.00,
-                    lineManSales: 170.00,
-                    thaiHelpThai: 45.00,
-                    startDrawer: 2430.00,
-                    expectedDrawer: 2500.00,
-                    actualDrawer: 2500.00,
-                    difference: 0.00,
-                    totalBills: 12,
-                    categories: [
-                        { name: "NON - COFFEE", qty: 9, amount: 685.00 },
-                        { name: "Coffee Menu", qty: 1, amount: 70.00 },
-                        { name: "นมสด", qty: 2, amount: 140.00 },
-                        { name: "มัทฉะ 100%", qty: 2, amount: 200.00 },
-                        { name: "SODA", qty: 1, amount: 60.00 },
-                        { name: "ปังปิ้ง", qty: 2, amount: 70.00 }
-                    ]
-                }
-            ];
         }
 
         window.onload = () => {
