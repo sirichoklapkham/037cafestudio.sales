@@ -26,10 +26,14 @@
                         <p class="text-xs text-slate-500 mt-1">ระบบตรวจจับเงินสด & เช็คยอดขายอัตโนมัติ</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <div class="flex items-center gap-3">
+                    <button onclick="syncEmails()" id="btnSync" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
+                        <span>ดึงข้อมูลอีเมลใหม่</span>
+                    </button>
+                    <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        Gmail Auto Sync Active
+                        Gmail Sync
                     </span>
                 </div>
             </div>
@@ -52,7 +56,7 @@
         <!-- Loading Indicator -->
         <div id="loadingIndicator" class="hidden bg-white/90 border border-amber-200 p-4 rounded-2xl text-center font-medium text-amber-800 shadow-sm">
             <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500 mr-2"></div>
-            กำลังเชื่อมต่อกับ Google Apps Script เพื่อดึงข้อมูล...
+            <span id="loadingText">กำลังเชื่อมต่อกับ Google Sheets เพื่อดึงข้อมูล...</span>
         </div>
 
         <!-- ALERT BANNER: Cash Drawer Check -->
@@ -197,42 +201,61 @@
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbI5BjLd4M40NQbU1Yer9xxizJVtHp-25PZlohFSr3n5WcLRalBvoPnQDfCP0KJeh-7A/exec";
-        const GP_RATE = 0.321; // GP -32.1%
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykbbWn8ghSlTL1zdxLorz-4PcB-ijW9CEwIx-kVlI0185K4I7b2wqU7HFdSJfJh03z/exec";
+        const GP_RATE = 0.321;
 
-async function fetchReportData(dateStr) {
-    const loading = document.getElementById("loadingIndicator");
-    if (loading) loading.classList.remove("hidden");
+        // ปุ่มกดสั่ง Sync อีเมลใหม่
+        async function syncEmails() {
+            const iconSync = document.getElementById("iconSync");
+            const loading = document.getElementById("loadingIndicator");
+            const loadingText = document.getElementById("loadingText");
 
-    try {
-        // หากเปิดใช้งานผ่าน Google Apps Script โดยตรง
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run
-                .withSuccessHandler(renderReport)
-                .withFailureHandler(handleError)
-                .getSalesData(dateStr);
-            return;
+            iconSync.classList.add("animate-spin");
+            loadingText.innerText = "กำลังตรวจสอบและดึงอีเมลใหม่จาก noreply@foodstory.co...";
+            loading.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=sync`, { redirect: "follow" });
+                const res = await response.json();
+                
+                alert(res.message || "การดึงข้อมูลเสร็จสมบูรณ์");
+                
+                // โหลดข้อมูลตามวันที่เลือกปัจจุบันใหม่
+                const currentDate = document.getElementById("dateSelect").value;
+                fetchReportData(currentDate);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการดึงอีเมล: " + (err.message || err));
+            } finally {
+                iconSync.classList.remove("animate-spin");
+                loading.classList.add("hidden");
+            }
         }
 
-        // ดึงข้อมูลผ่าน Fetch API โดยรองรับ Redirect 302 ของ Google Apps Script
-        const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, {
-            method: "GET",
-            redirect: "follow"
-        });
+        async function fetchReportData(dateStr) {
+            const loading = document.getElementById("loadingIndicator");
+            const loadingText = document.getElementById("loadingText");
+            loadingText.innerText = "กำลังเชื่อมต่อกับ Google Sheets เพื่อดึงข้อมูล...";
+            loading.classList.remove("hidden");
 
-        if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
+            try {
+                if (typeof google !== 'undefined' && google.script && google.script.run) {
+                    google.script.run
+                        .withSuccessHandler(renderReport)
+                        .withFailureHandler(handleError)
+                        .getSalesData(dateStr);
+                    return;
+                }
+
+                const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, { redirect: "follow" });
+                const resData = await response.json();
+                renderReport(resData);
+            } catch (err) {
+                handleError(err);
+            } finally {
+                loading.classList.add("hidden");
+            }
         }
-
-        const resData = await response.json();
-        renderReport(resData);
-
-    } catch (err) {
-        handleError(err);
-    } finally {
-        if (loading) loading.classList.add("hidden");
-    }
-}
 
         function renderReport(response) {
             document.getElementById("loadingIndicator").classList.add("hidden");
