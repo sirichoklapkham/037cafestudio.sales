@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ฃ<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -58,7 +58,6 @@
 
         <!-- CALENDAR SECTION CARD -->
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
-            <!-- Calendar Header with Month Switcher -->
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-1.5">
                     <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
@@ -75,12 +74,10 @@
                 </div>
             </div>
 
-            <!-- Calendar Days Header -->
             <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
                 <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
             </div>
 
-            <!-- Calendar Days Grid -->
             <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
         </div>
 
@@ -90,8 +87,11 @@
             <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูล...</span>
         </div>
 
+        <!-- EMAIL AUDIT STATUS BANNER -->
+        <div id="emailAuditBanner" class="hidden rounded-2xl p-3 border transition-all duration-300 shadow-sm text-xs space-y-1"></div>
+
         <!-- ALERT BANNER: Cash Drawer Check -->
-        <div id="cashAuditBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm"></div>
+        <div id="cashAuditBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex flex-col gap-2 shadow-sm"></div>
 
         <!-- HERO DASHBOARD CARD -->
         <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
@@ -114,6 +114,26 @@
                     <span class="text-slate-400 text-[10px] block">เงินสดปิดรอบจริง (Actual)</span>
                     <span id="valActualDrawer" class="font-bold text-amber-400 text-sm">฿0.00</span>
                     <span id="valCashDiff" class="text-[9px] text-slate-400 block truncate">ผลต่าง ฿0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAID IN / PAID OUT SUMMARY CARD -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4 text-blue-500"></i>
+                    ยอดเงินเข้า-ออกลิ้นชัก (Paid In / Paid Out)
+                </h2>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-100">
+                    <span class="text-blue-600 text-[10px] font-semibold block">ใส่เงินเพิ่มเข้าลิ้นชัก (Paid In)</span>
+                    <span id="valPaidIn" class="font-bold text-blue-800 text-sm">+฿0.00</span>
+                </div>
+                <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                    <span class="text-rose-600 text-[10px] font-semibold block">หยิบเงินออกจากลิ้นชัก (Paid Out)</span>
+                    <span id="valPaidOut" class="font-bold text-rose-800 text-sm">-฿0.00</span>
                 </div>
             </div>
         </div>
@@ -246,11 +266,11 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS1NdElkmPFbq19dv-vImdN9Jyh-sR6NolV_6mMd9jQgRSYCSnOALnaccebnMYDVGqoQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpDYrMu2Q-nMOlQDSH7GN9XRybZneYSXc1pNFXAgCUqmvVzRgx7qJPLh1QLv3hbQXoZA/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
-        let currentMonth = 9; // October (0-indexed)
+        let currentMonth = 9; // October
         let selectedDateStr = "2026-10-21";
         let monthlyDataCache = {};
 
@@ -406,7 +426,24 @@
                 </a>
             `;
 
-            // 2. Cash Drawer Check Banner (Start วันนี้ == Actual เมื่อวาน)
+            // 2. Email Verification Audit Check Banner
+            const emailAuditBanner = document.getElementById("emailAuditBanner");
+            if (data.auditStatus === "WARNING" || !data.isTotalSalesValid || !data.isDrawerFormulaValid) {
+                emailAuditBanner.classList.remove("hidden");
+                emailAuditBanner.className = "rounded-2xl p-3 bg-amber-50 border border-amber-300 text-amber-900 shadow-sm text-xs space-y-1";
+                emailAuditBanner.innerHTML = `
+                    <div class="flex items-center gap-1.5 font-bold text-amber-800">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600"></i>
+                        <span>⚠️ ตรวจพบข้อมูลอีเมลบางรายการไม่สมบูรณ์</span>
+                    </div>
+                    ${!data.isTotalSalesValid ? '<p class="text-[10px] text-amber-700 pl-5.5">• ผลรวมหมวดหมู่/การชำระเงิน ไม่ตรงกับ Total Sales</p>' : ''}
+                    ${!data.isDrawerFormulaValid ? '<p class="text-[10px] text-amber-700 pl-5.5">• สมการลิ้นชักเงินสดไม่สมดุล (Start + Sales + PaidIn - PaidOut != Expected)</p>' : ''}
+                `;
+            } else {
+                emailAuditBanner.classList.add("hidden");
+            }
+
+            // 3. Cash Drawer Check Banner
             const cashBanner = document.getElementById("cashAuditBanner");
             const isStartMatchPrevActual = Number(data.drawer.start) === Number(data.prevEndCash);
             const closeDiff = Number(data.drawer.diff);
@@ -414,29 +451,32 @@
             let bannerHtml = "";
             if (isStartMatchPrevActual) {
                 bannerHtml = `
-                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i>
-                    <div>
-                        <span class="font-bold block text-emerald-800">เงินสดเปิด-ปิดข้ามวันถูกต้อง (Matched)</span>
-                        <span class="text-[10px] text-emerald-600 block">ยอดเปิดวันนี้ (฿${Number(data.drawer.start).toLocaleString()}) เท่ากับยอดปิดนับจริงเมื่อวาน</span>
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                        <div>
+                            <span class="font-bold block text-emerald-800">เงินสดเปิด-ปิดข้ามวันถูกต้อง (Matched)</span>
+                            <span class="text-[10px] text-emerald-600 block">ยอดเปิดวันนี้ (฿${Number(data.drawer.start).toLocaleString()}) เท่ากับยอดปิดนับจริงเมื่อวาน</span>
+                        </div>
                     </div>
                 `;
-                cashBanner.className = "rounded-2xl p-3 bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 shadow-sm text-xs";
+                cashBanner.className = "rounded-2xl p-3 bg-emerald-50 border border-emerald-200 flex flex-col gap-2 shadow-sm text-xs";
             } else {
                 const diffOpen = Number(data.drawer.start) - Number(data.prevEndCash);
                 bannerHtml = `
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500 shrink-0"></i>
-                    <div>
-                        <span class="font-bold block text-rose-800">เงินสดเปิดรอบไม่ตรงกับเมื่อวาน! (Mismatch)</span>
-                        <span class="text-[10px] text-rose-600 block">ปิดเมื่อวาน ฿${Number(data.prevEndCash).toLocaleString()} | เปิดวันนี้ ฿${Number(data.drawer.start).toLocaleString()} (${diffOpen > 0 ? '+' : ''}${diffOpen.toLocaleString()} บ.)</span>
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500 shrink-0"></i>
+                        <div>
+                            <span class="font-bold block text-rose-800">เงินสดเปิดรอบไม่ตรงกับเมื่อวาน! (Mismatch)</span>
+                            <span class="text-[10px] text-rose-600 block">ปิดเมื่อวาน ฿${Number(data.prevEndCash).toLocaleString()} | เปิดวันนี้ ฿${Number(data.drawer.start).toLocaleString()} (${diffOpen > 0 ? '+' : ''}${diffOpen.toLocaleString()} บ.)</span>
+                        </div>
                     </div>
                 `;
-                cashBanner.className = "rounded-2xl p-3 bg-rose-50 border border-rose-200 flex items-center gap-2.5 shadow-sm text-xs animate-pulse";
+                cashBanner.className = "rounded-2xl p-3 bg-rose-50 border border-rose-200 flex flex-col gap-2 shadow-sm text-xs animate-pulse";
             }
 
-            // แจ้งเตือนเพิ่มเติมหากปิดรอบแล้วเงินขาด/เกิน (Difference)
             if (closeDiff !== 0) {
                 bannerHtml += `
-                    <div class="mt-2 pt-2 border-t border-slate-200/60 w-full flex justify-between items-center text-[11px]">
+                    <div class="pt-2 border-t border-slate-200/60 w-full flex justify-between items-center text-[11px]">
                         <span class="font-bold text-amber-700">⚠️ ผลต่างหลังปิดรอบ (Difference):</span>
                         <span class="font-bold ${closeDiff < 0 ? 'text-rose-600' : 'text-emerald-600'}">
                             ${closeDiff < 0 ? 'ขาด ' : 'เกิน +'}${Math.abs(closeDiff).toLocaleString('th-TH', {minimumFractionDigits:2})} บาท
@@ -447,7 +487,7 @@
 
             cashBanner.innerHTML = bannerHtml;
 
-            // 3. Hero Metrics
+            // 4. Hero Metrics
             document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("valTotalBills").innerText = `${data.totalBills} บิล`;
 
@@ -465,7 +505,11 @@
             const diffText = closeDiff === 0 ? "ตรงตามเป้า ฿0.00" : (closeDiff < 0 ? `ขาด ฿${Math.abs(closeDiff).toLocaleString()}` : `เกิน +฿${closeDiff.toLocaleString()}`);
             document.getElementById("valCashDiff").innerText = `ปิดรอบ: ${diffText}`;
 
-            // 4. Delivery Breakdown Cards (Grab, LINE MAN, ShopeeFood - GP 32.1%)
+            // 5. Paid In / Paid Out Display
+            document.getElementById("valPaidIn").innerText = `+฿${Number(data.drawer.paidIn).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valPaidOut").innerText = `-฿${Number(data.drawer.paidOut).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            // 6. Delivery Breakdown Cards
             const deliveryContainer = document.getElementById("deliveryCardContainer");
             deliveryContainer.innerHTML = "";
             if (data.delivery && data.delivery.length > 0) {
@@ -490,7 +534,7 @@
                 deliveryContainer.innerHTML = `<div class="bg-white p-3 rounded-2xl text-center text-xs text-slate-400">ไม่มีรายการเดลิเวอรี่</div>`;
             }
 
-            // 5. Payment Cards
+            // 7. Payment Cards
             const paymentGrid = document.getElementById("paymentGrid");
             paymentGrid.innerHTML = "";
             if (data.payments && data.payments.length > 0) {
@@ -505,7 +549,7 @@
                 });
             }
 
-            // 6. Categories
+            // 8. Categories
             const categoryGrid = document.getElementById("categoryGrid");
             categoryGrid.innerHTML = "";
             if (data.categories && data.categories.length > 0) {
@@ -520,7 +564,7 @@
                 });
             }
 
-            // 7. Audit Details Sync (Equation: Expected = Start + CashSales + PaidIn - PaidOut)
+            // 9. Audit Details Sync
             document.getElementById("auditPrevEndCash").innerText = `฿${Number(data.prevEndCash).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
             document.getElementById("auditStartCash").innerText = `฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
 
