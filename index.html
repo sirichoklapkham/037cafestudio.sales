@@ -197,31 +197,42 @@
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyG0Op9T_LMwzvC1mXQGFGgxK7e-nrNjVwe0DtF5N5Ma4GDYTko5_uBV_25vEspEJuzHQ/exec";
-        const GP_RATE = 0.321; // -32.1% GP
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbI5BjLd4M40NQbU1Yer9xxizJVtHp-25PZlohFSr3n5WcLRalBvoPnQDfCP0KJeh-7A/exec";
+        const GP_RATE = 0.321; // GP -32.1%
 
-        async function fetchReportData(dateStr) {
-            const loading = document.getElementById("loadingIndicator");
-            loading.classList.remove("hidden");
+async function fetchReportData(dateStr) {
+    const loading = document.getElementById("loadingIndicator");
+    if (loading) loading.classList.remove("hidden");
 
-            try {
-                if (typeof google !== 'undefined' && google.script && google.script.run) {
-                    google.script.run
-                        .withSuccessHandler(renderReport)
-                        .withFailureHandler(handleError)
-                        .getSalesData(dateStr);
-                    return;
-                }
-
-                const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`);
-                const resData = await response.json();
-                renderReport(resData);
-            } catch (err) {
-                handleError(err);
-            } finally {
-                loading.classList.add("hidden");
-            }
+    try {
+        // หากเปิดใช้งานผ่าน Google Apps Script โดยตรง
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+                .withSuccessHandler(renderReport)
+                .withFailureHandler(handleError)
+                .getSalesData(dateStr);
+            return;
         }
+
+        // ดึงข้อมูลผ่าน Fetch API โดยรองรับ Redirect 302 ของ Google Apps Script
+        const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, {
+            method: "GET",
+            redirect: "follow"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const resData = await response.json();
+        renderReport(resData);
+
+    } catch (err) {
+        handleError(err);
+    } finally {
+        if (loading) loading.classList.add("hidden");
+    }
+}
 
         function renderReport(response) {
             document.getElementById("loadingIndicator").classList.add("hidden");
