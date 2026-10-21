@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>037Cafe - Mobile Sales & Calendar Audit</title>
+
+    <!-- App Icon & Favicon (โลโก้ร้านสำหรับ iOS Add to Home Screen & เบราว์เซอร์ทุกเครื่อง) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    <link rel="shortcut icon" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    
+    <!-- iOS Web App Configurations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="037Cafe">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -295,15 +306,13 @@
 
                 if (dayData) {
                     if (dayData.totalSales > 0) {
-                        // ย่อตัวเลขเงิน เช่น 1,225 -> 1.2k
                         salesText = dayData.totalSales >= 1000 ? (dayData.totalSales / 1000).toFixed(1) + "k" : dayData.totalSales;
                     }
                     
-                    // เช็คจุดสีจากค่า isMatch ที่คำนวณถูกต้องข้ามวันมาจาก Google Apps Script
                     if (dayData.isMatch === true) {
-                        dotColorClass = "bg-emerald-500"; // 🟢 เมื่อยอดเปิดวันนี้ เท่ากับ ยอดปิดเมื่อวาน
+                        dotColorClass = "bg-emerald-500";
                     } else if (dayData.isMatch === false) {
-                        dotColorClass = "bg-rose-500";    // 🔴 เมื่อยอดเงินไม่ตรงกัน
+                        dotColorClass = "bg-rose-500";
                     }
                 }
 
