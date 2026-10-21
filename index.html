@@ -229,7 +229,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxWJ_S2zl4SGE7KTqeu1dS1cymf61BDvRtZj25PKc6QknK4XY_lPPVEQguH6twTkM-ng/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhHb7X61j0r2m2tnAhbrOWHCC6EVhV0mNDqt0QRIAoDAX8cVfcpOgz1Ai6UUFQs1R7rw/exec";
         const GP_RATE = 0.321;
 
         let currentYear = 2026;
@@ -293,10 +293,18 @@
                 let salesText = "";
                 let dotColorClass = "hidden";
 
-                if (dayData && dayData.totalSales > 0) {
-                    // ย่อตัวเลขเงิน เช่น 1,225 -> 1.2k
-                    salesText = dayData.totalSales >= 1000 ? (dayData.totalSales / 1000).toFixed(1) + "k" : dayData.totalSales;
-                    dotColorClass = (dayData.startDrawer === dayData.actualDrawer) ? "bg-emerald-500" : "bg-rose-500";
+                if (dayData) {
+                    if (dayData.totalSales > 0) {
+                        // ย่อตัวเลขเงิน เช่น 1,225 -> 1.2k
+                        salesText = dayData.totalSales >= 1000 ? (dayData.totalSales / 1000).toFixed(1) + "k" : dayData.totalSales;
+                    }
+                    
+                    // เช็คจุดสีจากค่า isMatch ที่คำนวณถูกต้องข้ามวันมาจาก Google Apps Script
+                    if (dayData.isMatch === true) {
+                        dotColorClass = "bg-emerald-500"; // 🟢 เมื่อยอดเปิดวันนี้ เท่ากับ ยอดปิดเมื่อวาน
+                    } else if (dayData.isMatch === false) {
+                        dotColorClass = "bg-rose-500";    // 🔴 เมื่อยอดเงินไม่ตรงกัน
+                    }
                 }
 
                 grid.innerHTML += `
