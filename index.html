@@ -3,254 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>037 Sales Dashboard</title>
+    <title>037Cafe - Daily Sales & Cash Audit Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
-<body class="p-3 md:p-6 max-w-5xl mx-auto text-slate-800">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- Header Section -->
-    <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                <h1 class="text-xl font-bold text-slate-900">037 Sales Dashboard</h1>
-            </div>
-            <p class="text-xs text-slate-400 mt-0.5">ระบบรายงานยอดขายแยกหมวดหมู่ 037Cafe & 037Studio</p>
-        </div>
-
-        <!-- Filter Range & Specific Date Search -->
-        <div class="flex items-center gap-2 overflow-x-auto hide-scroll w-full md:w-auto">
-            <div class="p-1 bg-slate-100 rounded-2xl flex text-xs font-semibold">
-                <button onclick="setRange(1)" id="r-1" class="px-3 py-1.5 rounded-xl transition-all">1 วัน</button>
-                <button onclick="setRange(7)" id="r-7" class="px-3 py-1.5 rounded-xl transition-all bg-white shadow-sm text-slate-900">7 วัน</button>
-                <button onclick="setRange(30)" id="r-30" class="px-3 py-1.5 rounded-xl transition-all">30 วัน</button>
-            </div>
-            <input type="date" id="dateSearch" onchange="searchByDate(this.value)" class="bg-slate-100 text-xs p-2 rounded-2xl outline-none border border-slate-200">
-        </div>
-    </div>
-
-    <!-- Mode Selector Tabs (แยกฟังก์ชันชัดเจน) -->
-    <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/60 rounded-2xl mb-6">
-        <button onclick="setTab('cafe')" id="tab-cafe" class="py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 bg-white text-orange-600 shadow-sm transition-all">
-            <i data-lucide="coffee" class="w-4 h-4"></i> 037Cafe (ยอดขาย POS)
-        </button>
-        <button onclick="setTab('studio')" id="tab-studio" class="py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800 transition-all">
-            <i data-lucide="camera" class="w-4 h-4"></i> 037Studio (คิวปฏิทิน)
-        </button>
-    </div>
-
-    <!-- VIEW 1: 037CAFE CONTENT -->
-    <div id="view-cafe" class="space-y-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <span class="text-xs text-slate-400">ยอดขายรวมก่อน GP</span>
-                <div class="text-lg md:text-xl font-bold text-slate-800 mt-1" id="c-total">฿0.00</div>
-            </div>
-            <div class="bg-emerald-600 text-white p-4 rounded-2xl shadow-sm">
-                <span class="text-xs text-emerald-100">รายรับสุทธิ (หัก GP 32.1%)</span>
-                <div class="text-lg md:text-xl font-bold mt-1" id="c-net">฿0.00</div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <span class="text-xs text-slate-400">ยอดขาย Delivery</span>
-                <div class="text-lg md:text-xl font-bold text-orange-500 mt-1" id="c-deliv">฿0.00</div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <span class="text-xs text-slate-400">จำนวนบิล / ลูกค้า</span>
-                <div class="text-lg md:text-xl font-bold text-blue-600 mt-1" id="c-bills">0 บิล</div>
-            </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">ช่องทางชำระเงิน</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block">เงินสด</span><span class="font-bold" id="pay-cash">฿0.00</span></div>
-                <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block">โอนเงิน</span><span class="font-bold" id="pay-transfer">฿0.00</span></div>
-                <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block">LINE Pay</span><span class="font-bold" id="pay-line">฿0.00</span></div>
-                <div class="bg-slate-50 p-2.5 rounded-xl"><span class="text-slate-400 block">ไทยช่วยไทย</span><span class="font-bold" id="pay-thai">฿0.00</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- VIEW 2: 037STUDIO CONTENT -->
-    <div id="view-studio" class="space-y-4 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="bg-purple-700 text-white p-5 rounded-2xl shadow-sm flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-purple-200">ยอดขายสตูดิโอรวม</span>
-                    <div class="text-2xl font-bold mt-1" id="s-total">฿0.00</div>
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500 text-white p-2 rounded-xl shadow-md shadow-amber-500/20">
+                        <i data-lucide="coffee" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-slate-900 leading-none">037Cafe & Studio</h1>
+                        <p class="text-xs text-slate-500 mt-1">ระบบตรวจจับเงินสด & เช็คยอดขายอัตโนมัติ</p>
+                    </div>
                 </div>
-                <i data-lucide="calendar" class="w-8 h-8 text-purple-300"></i>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-slate-400">จำนวนคิวจองทั้งหมด</span>
-                    <div class="text-2xl font-bold text-purple-600 mt-1" id="s-count">0 คิว</div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Gmail Auto Sync Active
+                    </span>
                 </div>
-                <i data-lucide="check-circle-2" class="w-8 h-8 text-purple-200"></i>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- History Table -->
-    <div class="bg-white rounded-3xl border border-slate-100 p-5 mt-6 shadow-sm">
-        <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="list-ordered" class="w-4 h-4 text-slate-500"></i> รายการย้อนหลังรายวัน (DD/MM/YYYY)
-        </h3>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs md:text-sm">
-                <thead>
-                    <tr class="text-slate-400 border-b border-slate-100">
-                        <th class="pb-3">วันที่</th>
-                        <th class="pb-3 text-orange-500">Cafe รวม</th>
-                        <th class="pb-3 text-emerald-600">Cafe สุทธิ</th>
-                        <th class="pb-3 text-purple-600">Studio ยอดรวม</th>
-                        <th class="pb-3">คิว Studio</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-50 font-medium"></tbody>
-            </table>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <!-- Date Selector & Status Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-3">
+                <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
+                <label for="dateSelect" class="font-medium text-slate-700">เลือกรอบวันที่ขาย:</label>
+                <input type="date" id="dateSelect" onchange="fetchReportData(this.value)"
+                       class="bg-slate-100 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div id="emailLinkContainer"></div>
         </div>
-    </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden bg-white/90 border border-amber-200 p-4 rounded-2xl text-center font-medium text-amber-800 shadow-sm">
+            <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500 mr-2"></div>
+            กำลังเชื่อมต่อกับ Google Apps Script เพื่อดึงข้อมูล...
+        </div>
+
+        <!-- ALERT BANNER: Cash Drawer Check -->
+        <div id="cashAuditBanner" class="rounded-2xl p-4 border transition-all duration-300 flex items-start gap-4 shadow-sm"></div>
+
+        <!-- TOP METRICS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-slate-500 mb-2">
+                    <span class="text-xs font-medium uppercase tracking-wider">ยอดขายรวม (Total Sales)</span>
+                    <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-slate-900" id="valTotalSales">฿0.00</div>
+                <p class="text-xs text-slate-500 mt-1" id="valTotalBills">0 ออเดอร์</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-slate-500 mb-2">
+                    <span class="text-xs font-medium uppercase tracking-wider">ยอดเดลิเวอรี่รับจริง (-32.1% GP)</span>
+                    <i data-lucide="bike" class="w-4 h-4 text-sky-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-sky-600" id="valDeliveryNet">฿0.00</div>
+                <p class="text-xs text-slate-400 mt-1" id="valDeliveryGross">จากยอดเต็ม ฿0.00</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-slate-500 mb-2">
+                    <span class="text-xs font-medium uppercase tracking-wider">เงินสดปิดรอบจริง (Actual Cash)</span>
+                    <i data-lucide="wallet" class="w-4 h-4 text-amber-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-slate-900" id="valActualDrawer">฿0.00</div>
+                <p class="text-xs text-slate-500 mt-1" id="valCashDiff">ผลต่าง ฿0.00</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-slate-500 mb-2">
+                    <span class="text-xs font-medium uppercase tracking-wider">เงินสดเปิดรอบ (Start Cash)</span>
+                    <i data-lucide="key-round" class="w-4 h-4 text-purple-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-slate-900" id="valStartDrawer">฿0.00</div>
+                <p class="text-xs text-slate-500 mt-1" id="valShiftTime">เวลาเปิด: -</p>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT DETAILS GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <h2 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-amber-500"></i>
+                        ช่องทางการรับเงิน (Payments)
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="paymentGrid"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                            <i data-lucide="shopping-bag" class="w-5 h-5 text-emerald-500"></i>
+                            รายละเอียด GP เดลิเวอรี่ (หักค่าธรรมเนียม 32.1%)
+                        </h2>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-mono">GP Rate: -32.1%</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-4">แอปพลิเคชัน</th>
+                                    <th class="py-3 px-4 text-center">ออเดอร์</th>
+                                    <th class="py-3 px-4 text-right">ยอดขายรวม</th>
+                                    <th class="py-3 px-4 text-right">หัก GP (32.1%)</th>
+                                    <th class="py-3 px-4 text-right text-emerald-600">ยอดคงเหลือรับจริง</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="deliveryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <h2 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i>
+                        ยอดขายแยกตามหมวดหมู่ (Sales by Category)
+                    </h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="categoryGrid"></div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <h2 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-amber-500"></i>
+                        รายละเอียดการตรวจเงินสด (Drawer Audit)
+                    </h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-500">เงินสดปิดรอบวันก่อนหน้า:</span>
+                            <span class="font-semibold text-slate-800" id="auditPrevEndCash">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-500">เงินสดเปิดรอบวันนี้:</span>
+                            <span class="font-semibold text-slate-800" id="auditStartCash">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-500">ยอดขายเงินสด (Cash Sales):</span>
+                            <span class="font-semibold text-slate-800" id="auditCashSales">+฿0.00</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-500">เงินสดที่ควรมี (Expected):</span>
+                            <span class="font-semibold text-slate-800" id="auditExpectedCash">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-500">เงินสดนับได้จริง (Actual):</span>
+                            <span class="font-semibold text-slate-800" id="auditActualCash">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between py-2 font-bold pt-2 text-base">
+                            <span>ผลต่างเงินสดปิดรอบ:</span>
+                            <span id="auditDiffCash" class="text-slate-800">฿0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-md">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-white/10 rounded-lg">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Google Sheets Database</h3>
+                            <p class="text-xs text-slate-400">จัดคอลัมน์เป็นระเบียบ 100%</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                        ข้อมูลทุกอย่างจากอีเมล <span class="text-amber-300 font-mono">noreply@foodstory.co</span> ถูกดึงและบันทึกไว้ใน Google Sheets โดยอัตโนมัติ
+                    </p>
+                    <a href="https://docs.google.com/spreadsheets" target="_blank" class="block w-full text-center py-2 px-4 bg-emerald-500 hover:bg-emerald-600 transition text-white rounded-xl text-xs font-bold">
+                        เปิดดูตาราง Google Sheets ฉบับเต็ม
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // *** นำ URL Deployment ล่าสุดของคุณมาวางตรงนี้ ***
-        const API_URL = "https://script.google.com/macros/s/AKfycbzswqBaq3adi7H_kvUEzLC-7mgfs_dBDzK_gbcUFD-_SpWZOkCkwf7wuWLwPkyk_BQ5xQ/exec";
-        const GP_RATE = 0.321;
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyG0Op9T_LMwzvC1mXQGFGgxK7e-nrNjVwe0DtF5N5Ma4GDYTko5_uBV_25vEspEJuzHQ/exec";
+        const GP_RATE = 0.321; // -32.1% GP
 
-        let allData = [];
-        let filteredData = [];
-        let rangeDays = 7;
+        async function fetchReportData(dateStr) {
+            const loading = document.getElementById("loadingIndicator");
+            loading.classList.remove("hidden");
 
-        function pNum(v) {
-            if (!v) return 0;
-            if (typeof v === 'number') return v;
-            const p = parseFloat(String(v).replace(/,/g, ''));
-            return isNaN(p) ? 0 : p;
-        }
-
-        async function loadData() {
             try {
-                const res = await fetch(API_URL, { redirect: "follow" });
-                allData = await res.json();
-                setRange(rangeDays);
+                if (typeof google !== 'undefined' && google.script && google.script.run) {
+                    google.script.run
+                        .withSuccessHandler(renderReport)
+                        .withFailureHandler(handleError)
+                        .getSalesData(dateStr);
+                    return;
+                }
+
+                const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`);
+                const resData = await response.json();
+                renderReport(resData);
             } catch (err) {
-                console.error("API Load Error:", err);
+                handleError(err);
+            } finally {
+                loading.classList.add("hidden");
             }
         }
 
-        function setTab(tab) {
-            const btnCafe = document.getElementById('tab-cafe');
-            const btnStudio = document.getElementById('tab-studio');
-            const viewCafe = document.getElementById('view-cafe');
-            const viewStudio = document.getElementById('view-studio');
+        function renderReport(response) {
+            document.getElementById("loadingIndicator").classList.add("hidden");
 
-            if (tab === 'cafe') {
-                btnCafe.className = "py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 bg-white text-orange-600 shadow-sm transition-all";
-                btnStudio.className = "py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800 transition-all";
-                viewCafe.classList.remove('hidden');
-                viewStudio.classList.add('hidden');
-            } else {
-                btnStudio.className = "py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 bg-white text-purple-600 shadow-sm transition-all";
-                btnCafe.className = "py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800 transition-all";
-                viewStudio.classList.remove('hidden');
-                viewCafe.classList.add('hidden');
+            if (!response || response.status !== "success") {
+                alert((response && response.message) ? response.message : "ไม่พบข้อมูลประจำวันที่เลือก");
+                return;
             }
-        }
 
-        function setRange(days) {
-            rangeDays = days;
-            [1, 7, 30].forEach(d => {
-                const btn = document.getElementById(`r-${d}`);
-                if (btn) btn.className = d === days ? "px-3 py-1.5 rounded-xl bg-white shadow-sm text-slate-900" : "px-3 py-1.5 rounded-xl text-slate-400";
-            });
+            const data = response.data;
 
-            filteredData = allData.slice(0, days);
-            renderUI();
-        }
+            document.getElementById("emailLinkContainer").innerHTML = `
+                <a href="${data.emailLink || '#'}" target="_blank" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-sm">
+                    <i data-lucide="mail" class="w-4 h-4 text-amber-400"></i>
+                    เปิดดูอีเมลต้นฉบับ (Gmail)
+                </a>
+            `;
 
-        function searchByDate(dateVal) {
-            if (!dateVal) return;
-            const found = allData.filter(i => i.isoDate === dateVal);
-            if (found.length > 0) {
-                filteredData = found;
-                renderUI();
-            } else {
-                alert("ไม่พบข้อมูลวันที่ค้นหา");
-            }
-        }
+            const cashBanner = document.getElementById("cashAuditBanner");
+            const isCashMatch = Number(data.drawer.start) === Number(data.prevEndCash);
 
-        function renderUI() {
-            let cTot = 0, cGrab = 0, cLM = 0, cBills = 0;
-            let cCash = 0, cTrans = 0, cLine = 0, cThai = 0;
-            let sTot = 0, sCount = 0;
-
-            filteredData.forEach(i => {
-                const c = i.cafe || {};
-                const s = i.studio || {};
-
-                cTot += pNum(c.totalSales);
-                cGrab += pNum(c.grabSales);
-                cLM += pNum(c.lineManSales);
-                cBills += pNum(c.totalBills);
-
-                cCash += pNum(c.cash);
-                cTrans += pNum(c.transfer);
-                cLine += pNum(c.linePay);
-                cThai += pNum(c.thaiHelp);
-
-                sTot += pNum(s.studioSales);
-                sCount += pNum(s.studioBookingsCount);
-            });
-
-            const delivTot = cGrab + cLM;
-            const cNet = cTot - (delivTot * GP_RATE);
-
-            // Cafe UI
-            document.getElementById('c-total').innerText = `฿${cTot.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('c-net').innerText = `฿${cNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('c-deliv').innerText = `฿${delivTot.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('c-bills').innerText = `${cBills} บิล`;
-
-            document.getElementById('pay-cash').innerText = `฿${cCash.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('pay-transfer').innerText = `฿${cTrans.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('pay-line').innerText = `฿${cLine.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('pay-thai').innerText = `฿${cThai.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-
-            // Studio UI
-            document.getElementById('s-total').innerText = `฿${sTot.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('s-count').innerText = `${sCount} คิว`;
-
-            // Table UI
-            const tb = document.getElementById('tableBody');
-            tb.innerHTML = '';
-            filteredData.forEach(i => {
-                const c = i.cafe || {};
-                const s = i.studio || {};
-                const del = pNum(c.grabSales) + pNum(c.lineManSales);
-                const net = pNum(c.totalSales) - (del * GP_RATE);
-
-                tb.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="py-3 font-bold text-slate-800">${i.displayDate || i.isoDate}</td>
-                        <td class="py-3 text-orange-500 font-semibold">฿${pNum(c.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                        <td class="py-3 text-emerald-600 font-bold">฿${net.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                        <td class="py-3 text-purple-600 font-bold">฿${pNum(s.studioSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                        <td class="py-3 text-slate-600 font-medium">${pNum(s.studioBookingsCount)} คิว</td>
-                    </tr>
+            if (isCashMatch) {
+                cashBanner.className = "rounded-2xl p-4 bg-emerald-50 border-emerald-200 text-emerald-800 flex items-start gap-4 shadow-sm";
+                cashBanner.innerHTML = `
+                    <div class="p-2 bg-emerald-500 text-white rounded-xl">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-emerald-900">เงินสดเปิด-ปิดรอบถูกต้อง (Cash Matched)</h3>
+                        <p class="text-xs text-emerald-700 mt-0.5">
+                            ยอดเงินสดเปิดรอบวันนี้ (฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits:2})}) 
+                            ตรงกับยอดเงินสดปิดรอบของเมื่อวานพอดี 100%
+                        </p>
+                    </div>
                 `;
-            });
+            } else {
+                const diff = Number(data.drawer.start) - Number(data.prevEndCash);
+                cashBanner.className = "rounded-2xl p-4 bg-rose-50 border-rose-200 text-rose-800 flex items-start gap-4 shadow-sm animate-pulse";
+                cashBanner.innerHTML = `
+                    <div class="p-2 bg-rose-500 text-white rounded-xl">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-rose-900">ตรวจพบข้อผิดพลาด! เงินสดเปิด-ปิดไม่เท่ากัน (Cash Mismatch)</h3>
+                        <p class="text-xs text-rose-700 mt-0.5">
+                            เงินสดปิดรอบวันก่อนหน้า: <span class="font-bold">฿${Number(data.prevEndCash).toLocaleString('th-TH', {minimumFractionDigits:2})}</span> 
+                            แต่เงินสดเปิดรอบวันนี้: <span class="font-bold">฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits:2})}</span> 
+                            (ผลต่าง: <span class="font-bold">${diff > 0 ? '+' : ''}${diff.toLocaleString('th-TH', {minimumFractionDigits:2})} บาท</span>)
+                        </p>
+                    </div>
+                `;
+            }
+
+            document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valTotalBills").innerText = `${data.totalBills} บิล/ออเดอร์`;
+
+            let totalDeliveryGross = 0;
+            if (data.delivery && data.delivery.length > 0) {
+                data.delivery.forEach(d => totalDeliveryGross += Number(d.gross || 0));
+            }
+            const totalDeliveryNet = totalDeliveryGross * (1 - GP_RATE);
+
+            document.getElementById("valDeliveryNet").innerText = `฿${totalDeliveryNet.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valDeliveryGross").innerText = `จากยอดเต็ม ฿${totalDeliveryGross.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            document.getElementById("valActualDrawer").innerText = `฿${Number(data.drawer.actual).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valCashDiff").innerText = `ผลต่าง ฿${Number(data.drawer.diff).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            document.getElementById("valStartDrawer").innerText = `฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valShiftTime").innerText = `เวลาเปิด: ${data.startTime || '-'}`;
+
+            const deliveryTable = document.getElementById("deliveryTable");
+            deliveryTable.innerHTML = "";
+            if (data.delivery && data.delivery.length > 0) {
+                data.delivery.forEach(item => {
+                    const gross = Number(item.gross || 0);
+                    const gpAmount = gross * GP_RATE;
+                    const netAmount = gross - gpAmount;
+                    deliveryTable.innerHTML += `
+                        <tr>
+                            <td class="py-3 px-4 font-medium text-slate-800">${item.name}</td>
+                            <td class="py-3 px-4 text-center text-slate-500">${item.qty || 0}</td>
+                            <td class="py-3 px-4 text-right font-mono">฿${gross.toLocaleString('th-TH', {minimumFractionDigits:2})}</td>
+                            <td class="py-3 px-4 text-right font-mono text-rose-500">-฿${gpAmount.toLocaleString('th-TH', {minimumFractionDigits:2})}</td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-600">฿${netAmount.toLocaleString('th-TH', {minimumFractionDigits:2})}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                deliveryTable.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">ไม่มีรายการเดลิเวอรี่</td></tr>`;
+            }
+
+            const paymentGrid = document.getElementById("paymentGrid");
+            paymentGrid.innerHTML = "";
+            if (data.payments && data.payments.length > 0) {
+                data.payments.forEach(p => {
+                    paymentGrid.innerHTML += `
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-slate-500">${p.name}</p>
+                                <p class="text-sm font-bold text-slate-800">฿${Number(p.amount).toLocaleString('th-TH', {minimumFractionDigits:2})}</p>
+                            </div>
+                            <span class="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">${p.qty} รายการ</span>
+                        </div>
+                    `;
+                });
+            }
+
+            const categoryGrid = document.getElementById("categoryGrid");
+            categoryGrid.innerHTML = "";
+            if (data.categories && data.categories.length > 0) {
+                data.categories.forEach(c => {
+                    categoryGrid.innerHTML += `
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-xs text-slate-500 truncate">${c.name}</p>
+                            <p class="text-sm font-bold text-slate-800 mt-1">฿${Number(c.amount).toLocaleString('th-TH', {minimumFractionDigits:2})}</p>
+                            <p class="text-[10px] text-slate-400">${c.qty} รายการ</p>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById("auditPrevEndCash").innerText = `฿${Number(data.prevEndCash).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            document.getElementById("auditStartCash").innerText = `฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            document.getElementById("auditCashSales").innerText = `+฿${Number(data.drawer.cashSales).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            document.getElementById("auditExpectedCash").innerText = `฿${Number(data.drawer.expected).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            document.getElementById("auditActualCash").innerText = `฿${Number(data.drawer.actual).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+
+            const diffElem = document.getElementById("auditDiffCash");
+            diffElem.innerText = `฿${Number(data.drawer.diff).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            diffElem.className = Number(data.drawer.diff) === 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold";
+
+            lucide.createIcons();
+        }
+
+        function handleError(err) {
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
         }
 
         window.onload = () => {
-            lucide.createIcons();
-            loadData();
-            setInterval(loadData, 3000); // Live Refresh 3 วินาที
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("dateSelect").value = today;
+            fetchReportData(today);
         };
     </script>
 </body>
