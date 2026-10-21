@@ -102,7 +102,20 @@
                 <span id="valTotalBills" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 บิล</span>
             </div>
             
-            <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
+            <!-- 🌟 วงกลมสีเขียว: แสดงยอดรายรับสุทธิของเดือนนี้ (หลังหัก GP) -->
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="text-[10px] text-slate-400 block">ยอดขายประจำวัน (Gross)</span>
+                    <div class="text-3xl font-extrabold tracking-tight text-white" id="valTotalSales">฿0.00</div>
+                </div>
+                <div class="text-right bg-emerald-950/80 border border-emerald-500/30 p-2.5 rounded-2xl backdrop-blur-sm">
+                    <span class="text-[9px] text-emerald-400 font-semibold block flex items-center justify-end gap-1">
+                        <i data-lucide="trending-up" class="w-3 h-3 text-emerald-400"></i>
+                        รายรับสุทธิเดือนนี้ (หัก GP)
+                    </span>
+                    <span id="valMonthNetRevenue" class="text-base font-extrabold text-emerald-300">฿0.00</span>
+                </div>
+            </div>
 
             <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
                 <div>
@@ -247,7 +260,103 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
+    <!-- 🌟 MODAL: หน้าต่างสรุปยอดขายรายเดือน (ปุ่มวงกลมสีแดง) -->
+    <div id="monthlySummaryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden transition-opacity duration-300">
+        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white rounded-t-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
+            
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 sticky top-0 bg-white z-10">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 rounded-xl bg-amber-50 text-amber-600">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">สรุปยอดขายรายเดือน</h3>
+                        <p class="text-[10px] text-slate-400" id="modalMonthSubtitle">ประจำเดือน -</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="changeModalMonth(-1)" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="changeModalMonth(1)" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="toggleMonthlyModal(false)" class="p-1.5 rounded-full bg-slate-100 text-slate-500 ml-1">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Total Revenue Highlights -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-3 rounded-2xl shadow-sm space-y-1">
+                    <span class="text-slate-400 text-[10px] block">ยอดขายรวมเต็ม (Gross)</span>
+                    <span class="font-extrabold text-lg text-amber-400 block" id="mGrossSales">฿0.00</span>
+                    <span class="text-[9px] text-slate-400 block" id="mTotalBills">0 บิล</span>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white p-3 rounded-2xl shadow-sm space-y-1 border border-emerald-500/20">
+                    <span class="text-emerald-400 text-[10px] font-semibold block">รายรับสุทธิ (หัก GP 32.1%)</span>
+                    <span class="font-extrabold text-lg text-emerald-300 block" id="mNetRevenue">฿0.00</span>
+                    <span class="text-[9px] text-emerald-400/80 block">รวมเงินสด POS & เดลิเวอรี่</span>
+                </div>
+            </div>
+
+            <!-- Delivery Breakdown Monthly -->
+            <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100 space-y-2 text-xs">
+                <span class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
+                    <i data-lucide="bike" class="w-3.5 h-3.5 text-sky-500"></i>
+                    สรุปเดลิเวอรี่ประจำเดือน (หัก GP -32.1%)
+                </span>
+                <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div class="bg-white p-2 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">Grab</span>
+                        <span class="font-bold text-slate-800 block" id="mGrabGross">฿0</span>
+                        <span class="text-[8px] text-emerald-600 block" id="mGrabNet">รับ ฿0</span>
+                    </div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">LINE MAN</span>
+                        <span class="font-bold text-slate-800 block" id="mLineManGross">฿0</span>
+                        <span class="text-[8px] text-emerald-600 block" id="mLineManNet">รับ ฿0</span>
+                    </div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">ShopeeFood</span>
+                        <span class="font-bold text-slate-800 block" id="mShopeeGross">฿0</span>
+                        <span class="text-[8px] text-emerald-600 block" id="mShopeeNet">รับ ฿0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Financial Breakdown Table -->
+            <div class="space-y-2 text-xs">
+                <span class="font-bold text-slate-800 text-[11px] block">รายละเอียดสรุปยอดขายทั้งเดือน</span>
+                <div class="space-y-1.5 bg-white p-3 rounded-2xl border border-slate-200">
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500">ยอดขายเงินสด (POS Cash):</span>
+                        <span class="font-semibold text-slate-800" id="mCashSales">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500">ยอดขายเดลิเวอรี่รวม (Gross):</span>
+                        <span class="font-semibold text-slate-800" id="mDeliveryGross">฿0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100 text-rose-500">
+                        <span>หัก GP เดลิเวอรี่รวม (32.1%):</span>
+                        <span class="font-semibold" id="mDeliveryGp">-฿0.00</span>
+                    </div>
+                    <div class="flex justify-between py-1.5 font-bold text-slate-900 border-t border-slate-200">
+                        <span>คงเหลือรายรับสุทธิเข้าบัญชี/ร้าน:</span>
+                        <span class="text-emerald-600 text-sm" id="mFinalNet">฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="toggleMonthlyModal(false)" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold active:scale-95 transition">
+                ปิดหน้าต่างสรุป
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (ปรับวงกลมสีแดง ให้เป็นปุ่ม "สรุปรายเดือน") -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
         <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
             <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-1 text-amber-600">
@@ -258,21 +367,23 @@
                 <i data-lucide="wallet" class="w-5 h-5"></i>
                 <span class="text-[10px] font-medium">ตรวจเงินสด</span>
             </button>
-            <a href="https://docs.google.com/spreadsheets" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
-                <span class="text-[10px] font-medium">Google Sheet</span>
-            </a>
+            <!-- 🌟 วงกลมสีแดง: ปุ่มสรุปรายเดือน -->
+            <button onclick="toggleMonthlyModal(true)" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
+                <i data-lucide="file-text" class="w-5 h-5 text-indigo-500"></i>
+                <span class="text-[10px] font-semibold text-slate-700">สรุปรายเดือน</span>
+            </button>
         </div>
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoTDujHD0N_KTotPSxMw_ufHyF0Zxb-4AOzzhWiO93sVvYzcVeBRUXu06qAmaqq8j8Uw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIgKw2BobRRV_LkQJYG4MKkATrC10RIAMcOftoGL5z9I_RPduI5WGBF9g4fvCHgtQQLg/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
         let currentMonth = 9; // October
         let selectedDateStr = "2026-10-21";
         let monthlyDataCache = {};
+        let currentTotalsCache = {};
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
@@ -280,6 +391,16 @@
             const sheet = document.getElementById("bottomSheet");
             if (show) sheet.classList.remove("hidden");
             else sheet.classList.add("hidden");
+        }
+
+        function toggleMonthlyModal(show) {
+            const modal = document.getElementById("monthlySummaryModal");
+            if (show) {
+                modal.classList.remove("hidden");
+                renderMonthlyModalData();
+            } else {
+                modal.classList.add("hidden");
+            }
         }
 
         async function fetchMonthlySummary() {
@@ -291,14 +412,18 @@
                 const res = await response.json();
                 if (res.status === "success") {
                     monthlyDataCache = res.data || {};
+                    currentTotalsCache = res.totals || {};
                 } else {
                     monthlyDataCache = {};
+                    currentTotalsCache = {};
                 }
             } catch (err) {
                 console.warn("Monthly Summary Error: ", err);
                 monthlyDataCache = {};
+                currentTotalsCache = {};
             }
             renderCalendar();
+            updateHeroMonthNetRevenue();
         }
 
         function changeMonth(delta) {
@@ -306,6 +431,57 @@
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             fetchMonthlySummary();
+        }
+
+        function changeModalMonth(delta) {
+            changeMonth(delta);
+            setTimeout(() => {
+                renderMonthlyModalData();
+            }, 300);
+        }
+
+        // 🌟 อัปเดตยอดรายรับสุทธิเดือนนี้ (วงกลมสีเขียว)
+        function updateHeroMonthNetRevenue() {
+            const netRev = currentTotalsCache.netRevenue || 0;
+            document.getElementById("valMonthNetRevenue").innerText = `฿${Number(netRev).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+        }
+
+        // 🌟 Render ข้อมูลใส่ Pop-up Modal สรุปรายเดือน (วงกลมสีแดง)
+        function renderMonthlyModalData() {
+            document.getElementById("modalMonthSubtitle").innerText = `ประจำเดือน ${thaiMonths[currentMonth]} ${currentYear}`;
+            
+            const totals = currentTotalsCache || {};
+            const gross = Number(totals.grossSales || 0);
+            const net = Number(totals.netRevenue || 0);
+            const bills = Number(totals.totalBills || 0);
+
+            document.getElementById("mGrossSales").innerText = `฿${gross.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("mNetRevenue").innerText = `฿${net.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("mTotalBills").innerText = `${bills} บิลทั้งเดือน`;
+
+            const grabG = Number(totals.grabGross || 0);
+            const lineManG = Number(totals.lineManGross || 0);
+            const shopeeG = Number(totals.shopeeGross || 0);
+
+            document.getElementById("mGrabGross").innerText = `฿${grabG.toLocaleString()}`;
+            document.getElementById("mGrabNet").innerText = `รับ ฿${(grabG * (1 - GP_RATE)).toLocaleString('th-TH', {maximumFractionDigits:0})}`;
+
+            document.getElementById("mLineManGross").innerText = `฿${lineManG.toLocaleString()}`;
+            document.getElementById("mLineManNet").innerText = `รับ ฿${(lineManG * (1 - GP_RATE)).toLocaleString('th-TH', {maximumFractionDigits:0})}`;
+
+            document.getElementById("mShopeeGross").innerText = `฿${shopeeG.toLocaleString()}`;
+            document.getElementById("mShopeeNet").innerText = `รับ ฿${(shopeeG * (1 - GP_RATE)).toLocaleString('th-TH', {maximumFractionDigits:0})}`;
+
+            const delivG = Number(totals.deliveryGross || 0);
+            const delivNet = Number(totals.deliveryNet || 0);
+            const delivGp = delivG - delivNet;
+
+            document.getElementById("mCashSales").innerText = `฿${Number(totals.cashSales || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("mDeliveryGross").innerText = `฿${delivG.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("mDeliveryGp").innerText = `-฿${delivGp.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("mFinalNet").innerText = `฿${net.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            
+            lucide.createIcons();
         }
 
         function renderCalendar() {
