@@ -31,7 +31,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar (แยกปุ่มดึงข้อมูลจาก Sheet และดึงจาก Email ชัดเจน) -->
+    <!-- Top App Bar (แยกสิทธิ์การทำงานอย่างเด็ดขาด) -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
         <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center gap-2">
             <div class="flex items-center gap-2 border-r border-slate-800 pr-2">
@@ -47,16 +47,16 @@
                 </div>
             </div>
 
-            <!-- กลุ่มปุ่มแยกการดึงข้อมูล -->
+            <!-- ปุ่มกลุ่มการทำงาน -->
             <div class="flex items-center gap-1.5 shrink-0">
-                <!-- ปุ่ม 1: รีเฟรช/โหลดเฉพาะ Google Sheet -->
-                <button onclick="fetchMonthlySummary(); fetchReportData(selectedDateStr);" id="btnRefreshSheet" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                <!-- ปุ่ม 1: โหลดเฉพาะข้อมูลจาก Google Sheet -->
+                <button onclick="loadFromSheetOnly()" id="btnRefreshSheet" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
                     <span>โหลด Sheet</span>
                 </button>
 
-                <!-- ปุ่ม 2: สั่ง Sync อีเมล FoodStory -->
-                <button onclick="syncEmails()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                <!-- ปุ่ม 2: สั่งดึงเฉพาะอีเมลปิดรอบใหม่จาก Gmail -->
+                <button onclick="syncNewEmailsOnly()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
                     <i data-lucide="mail" class="w-3.5 h-3.5 text-amber-400" id="iconSync"></i>
                     <span>ดึงอีเมล</span>
                 </button>
@@ -382,7 +382,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVqpqhR533qjYesCP311KTSTgoK1NItlE-FPKaUaNFhhMATCUmeQwkBSvLH-HQ3COxPw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyde2tXyTM_ePdBbhp-UDASokTGqtCUJuLgLs8xF1reXpKqQMeGbApF23931J51ASiVtQ/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
@@ -390,6 +390,8 @@
         let selectedDateStr = "2026-10-21";
         let monthlyDataCache = {};
         let currentTotalsCache = {};
+
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
         async function safeFetch(url) {
             try {
@@ -399,6 +401,35 @@
             } catch (e) {
                 const resText = await fetch(url, { redirect: "follow" });
                 return JSON.parse(await resText.text());
+            }
+        }
+
+        // 🌟 โหลดเฉพาะข้อมูลจาก Google Sheet เท่านั้น
+        async function loadFromSheetOnly() {
+            await fetchMonthlySummary();
+            await fetchReportData(selectedDateStr);
+        }
+
+        // 🌟 ดึงเฉพาะวันปิดรอบใหม่จาก Gmail
+        async function syncNewEmailsOnly() {
+            const iconSync = document.getElementById("iconSync");
+            const loading = document.getElementById("loadingIndicator");
+            const loadingText = document.getElementById("loadingText");
+
+            iconSync.classList.add("animate-spin");
+            loadingText.innerText = "กำลังสแกนอีเมลเฉพาะวันปิดรอบใหม่...";
+            loading.classList.remove("hidden");
+
+            try {
+                const res = await safeFetch(`${SCRIPT_URL}?action=sync`);
+                alert(res.message || "สแกนอีเมลวันปิดรอบใหม่เรียบร้อยแล้ว");
+                await loadFromSheetOnly();
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการดึงอีเมล: " + (err.message || err));
+            } finally {
+                iconSync.classList.remove("animate-spin");
+                loading.classList.add("hidden");
             }
         }
 
@@ -545,31 +576,6 @@
             fetchReportData(dateStr);
         }
 
-        // 🌟 ดึงข้อมูลจากอีเมล (Gmail)
-        async function syncEmails() {
-            const iconSync = document.getElementById("iconSync");
-            const loading = document.getElementById("loadingIndicator");
-            const loadingText = document.getElementById("loadingText");
-
-            iconSync.classList.add("animate-spin");
-            loadingText.innerText = "กำลังอ่านข้อมูลอีเมลจาก FoodStory...";
-            loading.classList.remove("hidden");
-
-            try {
-                const res = await safeFetch(`${SCRIPT_URL}?action=sync`);
-                alert(res.message || "การดึงข้อมูลจากอีเมลเสร็จสมบูรณ์");
-                await fetchMonthlySummary();
-                fetchReportData(selectedDateStr);
-
-            } catch (err) {
-                alert("เกิดข้อผิดพลาดในการดึงอีเมล: " + (err.message || err));
-            } finally {
-                iconSync.classList.remove("animate-spin");
-                loading.classList.add("hidden");
-            }
-        }
-
-        // 🌟 ดึงข้อมูลจาก Google Sheet
         async function fetchReportData(dateStr) {
             const loading = document.getElementById("loadingIndicator");
             const loadingText = document.getElementById("loadingText");
@@ -775,16 +781,13 @@
             alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
         }
 
-        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-
         window.onload = async () => {
             const today = new Date();
             currentYear = today.getFullYear();
             currentMonth = today.getMonth();
             selectedDateStr = today.toISOString().split('T')[0];
 
-            await fetchMonthlySummary();
-            fetchReportData(selectedDateStr);
+            await loadFromSheetOnly();
         };
     </script>
 </body>
