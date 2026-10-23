@@ -31,25 +31,36 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar -->
+    <!-- Top App Bar (แยกปุ่มดึงข้อมูลจาก Sheet และดึงจาก Email ชัดเจน) -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2 border-r border-slate-800 pr-2">
+                <div class="w-9 h-9 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
                     <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
                          alt="037Cafe Logo" 
                          class="w-full h-full object-cover"
                          onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'coffee\' class=\'w-5 h-5 text-amber-500\'></i>'; lucide.createIcons();">
                 </div>
                 <div>
-                    <h1 class="font-bold text-base leading-tight">037Cafe & Studio</h1>
-                    <p class="text-[10px] text-amber-400 font-medium">ระบบตรวจจับเงินสด & POS</p>
+                    <h1 class="font-bold text-sm leading-tight">037Cafe</h1>
+                    <p class="text-[9px] text-amber-400 font-medium">POS & Cash Audit</p>
                 </div>
             </div>
-            <button onclick="syncEmails()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
-                <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
-                <span class="hidden sm:inline">ดึงอีเมล</span>
-            </button>
+
+            <!-- กลุ่มปุ่มแยกการดึงข้อมูล -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <!-- ปุ่ม 1: รีเฟรช/โหลดเฉพาะ Google Sheet -->
+                <button onclick="fetchMonthlySummary(); fetchReportData(selectedDateStr);" id="btnRefreshSheet" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>โหลด Sheet</span>
+                </button>
+
+                <!-- ปุ่ม 2: สั่ง Sync อีเมล FoodStory -->
+                <button onclick="syncEmails()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-amber-400" id="iconSync"></i>
+                    <span>ดึงอีเมล</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -371,7 +382,6 @@
     </nav>
 
     <script>
-        // 📌 มั่นใจว่าเปลี่ยน SCRIPT_URL ตรงนี้ให้เป็นลิงก์ Google Apps Script ปัจจุบันของคุณ
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVqpqhR533qjYesCP311KTSTgoK1NItlE-FPKaUaNFhhMATCUmeQwkBSvLH-HQ3COxPw/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
@@ -381,16 +391,12 @@
         let monthlyDataCache = {};
         let currentTotalsCache = {};
 
-        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-
-        // 🌟 เซฟระบบการดึงข้อมูลเพื่อป้องกัน CORS / Failed to fetch บน Vercel
         async function safeFetch(url) {
             try {
                 const response = await fetch(url, { method: "GET", redirect: "follow" });
                 if (!response.ok) throw new Error("HTTP Status Error");
                 return await response.json();
             } catch (e) {
-                // หากติด Redirect / CORS บล็อก ให้ลองส่งแบบ Text Fallback
                 const resText = await fetch(url, { redirect: "follow" });
                 return JSON.parse(await resText.text());
             }
@@ -539,18 +545,19 @@
             fetchReportData(dateStr);
         }
 
+        // 🌟 ดึงข้อมูลจากอีเมล (Gmail)
         async function syncEmails() {
             const iconSync = document.getElementById("iconSync");
             const loading = document.getElementById("loadingIndicator");
             const loadingText = document.getElementById("loadingText");
 
             iconSync.classList.add("animate-spin");
-            loadingText.innerText = "กำลังดึงข้อมูลอีเมลจาก noreply@foodstory.co...";
+            loadingText.innerText = "กำลังอ่านข้อมูลอีเมลจาก FoodStory...";
             loading.classList.remove("hidden");
 
             try {
                 const res = await safeFetch(`${SCRIPT_URL}?action=sync`);
-                alert(res.message || "การดึงข้อมูลเสร็จสมบูรณ์");
+                alert(res.message || "การดึงข้อมูลจากอีเมลเสร็จสมบูรณ์");
                 await fetchMonthlySummary();
                 fetchReportData(selectedDateStr);
 
@@ -562,10 +569,11 @@
             }
         }
 
+        // 🌟 ดึงข้อมูลจาก Google Sheet
         async function fetchReportData(dateStr) {
             const loading = document.getElementById("loadingIndicator");
             const loadingText = document.getElementById("loadingText");
-            loadingText.innerText = "กำลังโหลดข้อมูลจาก Google Sheets...";
+            loadingText.innerText = "กำลังโหลดข้อมูลจาก Google Sheet...";
             loading.classList.remove("hidden");
 
             try {
@@ -766,6 +774,8 @@
             document.getElementById("loadingIndicator").classList.add("hidden");
             alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
         }
+
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
         window.onload = async () => {
             const today = new Date();
