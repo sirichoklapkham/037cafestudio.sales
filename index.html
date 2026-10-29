@@ -406,7 +406,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVSxa4QrhmMen1Q-X1K0v1hs0ClPTpY796KnscHodyrEiMMWD1kBun8IW6dWI_Pu_ExA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0bvtrzRT2K3nGOqpN9cxbAtEnPw6vxfHbX5mGmbSY1BjmgLPWVG5Y4W_4hn1D0lmpuw/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
@@ -567,6 +567,9 @@
             lucide.createIcons();
         }
 
+        /**
+         * 📅 แสดงผลปฏิทินพร้อมไอคอนถุงเงิน 💰 หากวันนั้นมีการซื้อวัตถุดิบ
+         */
         function renderCalendar() {
             const grid = document.getElementById("calendarGrid");
             grid.innerHTML = "";
@@ -585,6 +588,7 @@
 
                 let salesText = "";
                 let dotColorClass = "hidden";
+                let expenseBadge = ""; // ✨ ตัวแปรเก็บไอคอนแสดงสถานะรายจ่าย
 
                 if (dayData) {
                     if (dayData.totalSales > 0) {
@@ -596,12 +600,18 @@
                     } else if (dayData.isMatch === false) {
                         dotColorClass = "bg-rose-500";
                     }
+
+                    // 💰 หากวันนั้นมีรายจ่าย ให้แสดงสัญลักษณ์ถุงเงินที่มุมซ้ายบน
+                    if (dayData.hasExpense) {
+                        expenseBadge = `<span class="absolute top-0.5 left-1 text-[10px] leading-none" title="วันที่มีรายจ่ายซื้อสินค้า">💰</span>`;
+                    }
                 }
 
                 grid.innerHTML += `
                     <button onclick="selectCalendarDate('${dateKey}')" 
                             class="h-11 rounded-xl flex flex-col items-center justify-between p-1 transition border relative ${isSelected ? 'bg-amber-500 text-slate-900 font-bold border-amber-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-100'}">
-                        <span class="text-[11px] leading-none">${day}</span>
+                        ${expenseBadge}
+                        <span class="text-[11px] leading-none ${dayData && dayData.hasExpense ? 'ml-auto text-rose-600 font-bold' : ''}">${day}</span>
                         ${salesText ? `<span class="text-[8px] ${isSelected ? 'text-slate-900 font-extrabold' : 'text-slate-500'}">฿${salesText}</span>` : '<span class="text-[8px] text-slate-300">-</span>'}
                         <span class="w-1.5 h-1.5 rounded-full ${dotColorClass}"></span>
                     </button>
@@ -737,7 +747,6 @@
             document.getElementById("sheetExpectedCash").innerText = `฿${Number(data.drawer.expected).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
             document.getElementById("sheetActualCash").innerText = `฿${Number(data.drawer.actual).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
 
-            // แสดงรายการซื้อสินค้า/รายจ่ายในหน้ารายจ่าย
             renderDailyExpenses(data.expenses || []);
 
             lucide.createIcons();
