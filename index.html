@@ -31,25 +31,35 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar -->
+    <!-- Top App Bar (แยกปุ่มโหลด Sheet และสแกน Gmail เพื่อลดโควตา) -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center gap-2">
+            <div class="flex items-center gap-2 border-r border-slate-800 pr-2">
+                <div class="w-9 h-9 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
                     <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
                          alt="037Cafe Logo" 
                          class="w-full h-full object-cover"
                          onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'coffee\' class=\'w-5 h-5 text-amber-500\'></i>'; lucide.createIcons();">
                 </div>
                 <div>
-                    <h1 class="font-bold text-base leading-tight">037Cafe & Studio</h1>
-                    <p class="text-[10px] text-amber-400 font-medium">ระบบตรวจจับเงินสด & สรุปรายจ่าย</p>
+                    <h1 class="font-bold text-sm leading-tight">037Cafe</h1>
+                    <p class="text-[9px] text-amber-400 font-medium">POS & Expense Audit</p>
                 </div>
             </div>
-            <button onclick="syncEmails()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
-                <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
-                <span class="hidden sm:inline">ดึงอีเมล</span>
-            </button>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+                <!-- ปุ่ม 1: โหลดเฉพาะข้อมูลจาก Google Sheet -->
+                <button onclick="loadFromSheetOnly()" id="btnRefreshSheet" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>โหลด Sheet</span>
+                </button>
+
+                <!-- ปุ่ม 2: สั่งดึงเฉพาะอีเมลปิดรอบใหม่จาก Gmail -->
+                <button onclick="syncNewEmailsOnly()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-amber-400" id="iconSync"></i>
+                    <span>ดึงอีเมล</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -398,7 +408,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxM_c0pqbA9sIyXGtNHKYMONZj_6SnTYoaao8JwVxcp0RGMxpW8BjN1HKR7vHoHMxDwng/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-rhdQKAmympVP4C1IiPRe_lT60sbEsdlt7F2b59Akki2tKo4stf6g-dpqmtSNHP8aqw/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
@@ -406,9 +416,48 @@
         let selectedDateStr = "2026-10-21";
         let monthlyDataCache = {};
         let currentTotalsCache = {};
-        let currentDailyExpenses = [];
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        async function safeFetch(url) {
+            try {
+                const response = await fetch(url, { method: "GET", redirect: "follow" });
+                if (!response.ok) throw new Error("HTTP Status Error");
+                return await response.json();
+            } catch (e) {
+                const resText = await fetch(url, { redirect: "follow" });
+                return JSON.parse(await resText.text());
+            }
+        }
+
+        // 🌟 โหลดเฉพาะข้อมูลจาก Google Sheet เท่านั้น (ไม่เปลืองโควตา Gmail)
+        async function loadFromSheetOnly() {
+            await fetchMonthlySummary();
+            await fetchReportData(selectedDateStr);
+        }
+
+        // 🌟 สแกนเฉพาะวันปิดรอบใหม่จาก Gmail
+        async function syncNewEmailsOnly() {
+            const iconSync = document.getElementById("iconSync");
+            const loading = document.getElementById("loadingIndicator");
+            const loadingText = document.getElementById("loadingText");
+
+            iconSync.classList.add("animate-spin");
+            loadingText.innerText = "กำลังสแกนอีเมลเฉพาะวันปิดรอบใหม่...";
+            loading.classList.remove("hidden");
+
+            try {
+                const res = await safeFetch(`${SCRIPT_URL}?action=sync`);
+                alert(res.message || "สแกนอีเมลวันปิดรอบใหม่เรียบร้อยแล้ว");
+                await loadFromSheetOnly();
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการดึงอีเมล: " + (err.message || err));
+            } finally {
+                iconSync.classList.remove("animate-spin");
+                loading.classList.add("hidden");
+            }
+        }
 
         function switchTab(tab) {
             const secOverview = document.getElementById("sectionOverview");
@@ -450,8 +499,7 @@
             document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
             
             try {
-                const response = await fetch(`${SCRIPT_URL}?month=${monthFormatted}`, { redirect: "follow" });
-                const res = await response.json();
+                const res = await safeFetch(`${SCRIPT_URL}?month=${monthFormatted}`);
                 if (res.status === "success") {
                     monthlyDataCache = res.data || {};
                     currentTotalsCache = res.totals || {};
@@ -572,31 +620,6 @@
             fetchReportData(dateStr);
         }
 
-        async function syncEmails() {
-            const iconSync = document.getElementById("iconSync");
-            const loading = document.getElementById("loadingIndicator");
-            const loadingText = document.getElementById("loadingText");
-
-            iconSync.classList.add("animate-spin");
-            loadingText.innerText = "กำลังดึงข้อมูลอีเมลจาก noreply@foodstory.co...";
-            loading.classList.remove("hidden");
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=sync`, { redirect: "follow" });
-                const res = await response.json();
-                
-                alert(res.message || "การดึงข้อมูลเสร็จสมบูรณ์");
-                await fetchMonthlySummary();
-                fetchReportData(selectedDateStr);
-
-            } catch (err) {
-                alert("เกิดข้อผิดพลาดในการดึงอีเมล: " + (err.message || err));
-            } finally {
-                iconSync.classList.remove("animate-spin");
-                loading.classList.add("hidden");
-            }
-        }
-
         async function fetchReportData(dateStr) {
             const loading = document.getElementById("loadingIndicator");
             const loadingText = document.getElementById("loadingText");
@@ -612,8 +635,7 @@
                     return;
                 }
 
-                const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, { redirect: "follow" });
-                const resData = await response.json();
+                const resData = await safeFetch(`${SCRIPT_URL}?date=${dateStr}`);
                 renderReport(resData);
             } catch (err) {
                 handleError(err);
@@ -634,7 +656,6 @@
             document.getElementById("displaySelectedDate").innerText = data.date || selectedDateStr;
             document.getElementById("expenseDateTitle").innerText = `ประจำวันที่ ${data.date || selectedDateStr}`;
 
-            // Email Link
             document.getElementById("emailLinkContainer").innerHTML = `
                 <a href="${data.emailLink || '#'}" target="_blank" class="bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
                     <i data-lucide="mail" class="w-3 h-3"></i>
@@ -642,7 +663,6 @@
                 </a>
             `;
 
-            // Email Audit Banner
             const emailAuditBanner = document.getElementById("emailAuditBanner");
             if (data.auditStatus === "WARNING" || !data.isTotalSalesValid || !data.isDrawerFormulaValid) {
                 emailAuditBanner.classList.remove("hidden");
@@ -657,7 +677,6 @@
                 emailAuditBanner.classList.add("hidden");
             }
 
-            // Cash Banner
             const cashBanner = document.getElementById("cashAuditBanner");
             const isStartMatchPrevActual = Number(data.drawer.start) === Number(data.prevEndCash);
             const closeDiff = Number(data.drawer.diff);
@@ -687,7 +706,6 @@
             }
             cashBanner.innerHTML = bannerHtml;
 
-            // Hero Metrics
             document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("valTotalBills").innerText = `${data.totalBills} บิล`;
 
@@ -705,16 +723,13 @@
             const diffText = closeDiff === 0 ? "ตรงตามเป้า ฿0.00" : (closeDiff < 0 ? `ขาด ฿${Math.abs(closeDiff).toLocaleString()}` : `เกิน +฿${closeDiff.toLocaleString()}`);
             document.getElementById("valCashDiff").innerText = `ปิดรอบ: ${diffText}`;
 
-            // Paid In / Paid Out
             document.getElementById("valPaidIn").innerText = `+฿${Number(data.drawer.paidIn).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("valPaidOut").innerText = `-฿${Number(data.drawer.paidOut).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
-            // Delivery & Payment & Categories Cards
             renderDeliveryCards(data.delivery);
             renderPaymentCards(data.payments);
             renderCategoryCards(data.categories);
 
-            // Audit Details Sync
             document.getElementById("auditPrevEndCash").innerText = `฿${Number(data.prevEndCash).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
             document.getElementById("auditStartCash").innerText = `฿${Number(data.drawer.start).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
 
@@ -727,13 +742,11 @@
             document.getElementById("sheetExpectedCash").innerText = `฿${Number(data.drawer.expected).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
             document.getElementById("sheetActualCash").innerText = `฿${Number(data.drawer.actual).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
 
-            // Render Expense Items for Selected Date
             renderDailyExpenses(data.expenses || []);
 
             lucide.createIcons();
         }
 
-        // 🌟 Updated Function for Expenses List Rendering
         function renderDailyExpenses(expenses) {
             const listContainer = document.getElementById("dailyExpenseList");
             const totalDisplay = document.getElementById("dailyExpenseTotal");
@@ -840,8 +853,7 @@
             currentMonth = today.getMonth();
             selectedDateStr = today.toISOString().split('T')[0];
 
-            await fetchMonthlySummary();
-            fetchReportData(selectedDateStr);
+            await loadFromSheetOnly();
         };
     </script>
 </body>
