@@ -398,7 +398,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQP-riTZvP-AMD2ENzkUCiZrBIBijTw95paj-CM7HeXG-p_PBq0NZNszF95O8JSP_E0A/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxM_c0pqbA9sIyXGtNHKYMONZj_6SnTYoaao8JwVxcp0RGMxpW8BjN1HKR7vHoHMxDwng/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
@@ -733,6 +733,7 @@
             lucide.createIcons();
         }
 
+        // 🌟 Updated Function for Expenses List Rendering
         function renderDailyExpenses(expenses) {
             const listContainer = document.getElementById("dailyExpenseList");
             const totalDisplay = document.getElementById("dailyExpenseTotal");
@@ -740,19 +741,26 @@
 
             let totalExp = 0;
 
-            if (expenses && expenses.length > 0) {
+            if (expenses && Array.isArray(expenses) && expenses.length > 0) {
                 expenses.forEach(exp => {
-                    const itemTotal = Number(exp.total || (exp.qty * exp.unitCost) || 0);
+                    const qty = Number(exp.qty || 0);
+                    const unitCost = Number(exp.unitCost || 0);
+                    let itemTotal = Number(exp.total || 0);
+
+                    if (itemTotal === 0 && qty > 0 && unitCost > 0) {
+                        itemTotal = qty * unitCost;
+                    }
+
                     totalExp += itemTotal;
 
                     listContainer.innerHTML += `
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs">
                             <div>
-                                <span class="font-bold text-slate-800 block">${exp.itemName} <span class="text-[10px] text-slate-400">(${exp.itemCode || '-'})</span></span>
-                                <span class="text-[11px] text-slate-500 block">จำนวน: ${exp.qty} ${exp.unit || ''} (฿${Number(exp.unitCost).toLocaleString()}/หน่วย)</span>
-                                ${exp.supplier ? `<span class="text-[10px] text-slate-400 block">ร้านค้า/ผู้ขาย: ${exp.supplier}</span>` : ''}
+                                <span class="font-bold text-slate-800 block">${exp.itemName || 'วัตถุดิบ/สินค้า'} <span class="text-[10px] text-slate-400">(${exp.itemCode || '-'})</span></span>
+                                <span class="text-[11px] text-slate-500 block">จำนวน: ${qty} ${exp.unit || ''} (฿${unitCost.toLocaleString('th-TH', {minimumFractionDigits: 2})}/หน่วย)</span>
+                                ${exp.supplier ? `<span class="text-[10px] text-slate-400 block">ผู้ขาย/หมายเหตุ: ${exp.supplier}</span>` : ''}
                             </div>
-                            <span class="font-bold text-rose-600 text-sm">฿${itemTotal.toLocaleString('th-TH', {minimumFractionDigits:2})}</span>
+                            <span class="font-bold text-rose-600 text-sm">฿${itemTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}</span>
                         </div>
                     `;
                 });
@@ -760,7 +768,7 @@
                 listContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">ไม่มีรายการซื้อสินค้า/รายจ่ายในวันนี้</div>`;
             }
 
-            totalDisplay.innerText = `฿${totalExp.toLocaleString('th-TH', {minimumFractionDigits:2})}`;
+            totalDisplay.innerText = `฿${totalExp.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
         }
 
         function renderDeliveryCards(delivery) {
