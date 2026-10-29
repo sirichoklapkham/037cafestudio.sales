@@ -31,7 +31,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar (แยกปุ่มโหลด Sheet และสแกน Gmail เพื่อลดโควตา) -->
+    <!-- Top App Bar -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
         <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center gap-2">
             <div class="flex items-center gap-2 border-r border-slate-800 pr-2">
@@ -48,13 +48,11 @@
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
-                <!-- ปุ่ม 1: โหลดเฉพาะข้อมูลจาก Google Sheet -->
                 <button onclick="loadFromSheetOnly()" id="btnRefreshSheet" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
                     <span>โหลด Sheet</span>
                 </button>
 
-                <!-- ปุ่ม 2: สั่งดึงเฉพาะอีเมลปิดรอบใหม่จาก Gmail -->
                 <button onclick="syncNewEmailsOnly()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-semibold">
                     <i data-lucide="mail" class="w-3.5 h-3.5 text-amber-400" id="iconSync"></i>
                     <span>ดึงอีเมล</span>
@@ -408,7 +406,7 @@
     </nav>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-rhdQKAmympVP4C1IiPRe_lT60sbEsdlt7F2b59Akki2tKo4stf6g-dpqmtSNHP8aqw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyin1nPWgQfTQRQCKfaOey8zbdfvh-08amjXaEUz7GDRjzwu-TDO54j0DO96h-6OnetLQ/exec";
         const GP_RATE = 0.321; // GP -32.1%
 
         let currentYear = 2026;
@@ -430,13 +428,11 @@
             }
         }
 
-        // 🌟 โหลดเฉพาะข้อมูลจาก Google Sheet เท่านั้น (ไม่เปลืองโควตา Gmail)
         async function loadFromSheetOnly() {
             await fetchMonthlySummary();
             await fetchReportData(selectedDateStr);
         }
 
-        // 🌟 สแกนเฉพาะวันปิดรอบใหม่จาก Gmail
         async function syncNewEmailsOnly() {
             const iconSync = document.getElementById("iconSync");
             const loading = document.getElementById("loadingIndicator");
@@ -693,7 +689,6 @@
                 `;
                 cashBanner.className = "rounded-2xl p-3 bg-emerald-50 border border-emerald-200 flex flex-col gap-2 shadow-sm text-xs";
             } else {
-                const diffOpen = Number(data.drawer.start) - Number(data.prevEndCash);
                 bannerHtml = `
                     <div class="flex items-center gap-2.5">
                         <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500 shrink-0"></i>
@@ -742,6 +737,7 @@
             document.getElementById("sheetExpectedCash").innerText = `฿${Number(data.drawer.expected).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
             document.getElementById("sheetActualCash").innerText = `฿${Number(data.drawer.actual).toLocaleString('th-TH', {minimumFractionDigits:2})}`;
 
+            // แสดงรายการซื้อสินค้า/รายจ่ายในหน้ารายจ่าย
             renderDailyExpenses(data.expenses || []);
 
             lucide.createIcons();
@@ -767,7 +763,7 @@
                     totalExp += itemTotal;
 
                     listContainer.innerHTML += `
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs shadow-sm">
                             <div>
                                 <span class="font-bold text-slate-800 block">${exp.itemName || 'วัตถุดิบ/สินค้า'} <span class="text-[10px] text-slate-400">(${exp.itemCode || '-'})</span></span>
                                 <span class="text-[11px] text-slate-500 block">จำนวน: ${qty} ${exp.unit || ''} (฿${unitCost.toLocaleString('th-TH', {minimumFractionDigits: 2})}/หน่วย)</span>
